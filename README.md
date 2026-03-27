@@ -3,6 +3,7 @@
 ## L'Histoire dont vous êtes le Héros
 
 **Règles du jeu**
+
 🗺️ Chaque décision façonne votre destin
 
 ⚔️ Vos statistiques évoluent selon vos choix
