@@ -5,55 +5,6 @@ Application web PHP/MariaDB — Architecture MVC
 
 ---
 
-## Prérequis
-
-- PHP 7.4 ou supérieur
-- MariaDB 10.x / MySQL 5.7+
-- Serveur web Apache ou Nginx
-- Extension PHP : PDO + PDO_MySQL activées
-
----
-
-## Installation
-
-### 1. Copier les fichiers
-
-Déposer le dossier `academie/` à la racine de votre serveur web :
-
-```
-C:\xampp\htdocs\academie\       (Windows / XAMPP)
-/var/www/html/academie/         (Linux / Apache)
-```
-
-### 2. Importer la base de données
-
-Importer le fichier `sql/academie.sql` via phpMyAdmin, HeidiSQL ou en ligne de commande :
-
-```bash
-mysql -u root -p < sql/academie.sql
-```
-
-Le script crée automatiquement la base `academie`, toutes les tables, et insère toutes les données de jeu.
-
-### 3. Configurer la connexion
-
-Ouvrir `config/database.php` et renseigner vos identifiants :
-
-```php
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'academie');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-```
-
-### 4. Lancer l'application
-
-```
-http://localhost/academie/
-```
-
----
-
 ## Arborescence
 
 ```
