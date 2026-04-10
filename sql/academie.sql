@@ -4,8 +4,8 @@
 -- 5 Actes · 6 Victoires · 10 Défaites
 -- Textes courts · Beaucoup de branches
 -- ============================================
-CREATE DATABASE IF NOT EXISTS joncart;
-USE joncart;
+CREATE DATABASE IF NOT EXISTS academie;
+USE academie;
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS 
     HistoriqueProgression,
