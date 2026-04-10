@@ -1,6 +1,7 @@
 
 -- ============================================
--- BASE DE DONNÉES : joncart 
+-- BASE DE DONNÉES : academie (VERSION ÉTENDUE)
+-- ~10 min de lecture, fins longues et variées
 -- ============================================
 USE joncart;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -25,7 +26,7 @@ CREATE TABLE Scene (
     est_fin       TINYINT(1) DEFAULT 0,
     type_fin      ENUM('victoire','defaite','neutre') DEFAULT 'neutre'
 );
- 
+
 CREATE TABLE Objet (
     id_objet  INT AUTO_INCREMENT PRIMARY KEY,
     nom       VARCHAR(100) NOT NULL,
@@ -33,7 +34,7 @@ CREATE TABLE Objet (
     effet_vie INT DEFAULT 0,
     effet_force INT DEFAULT 0
 );
- 
+
 CREATE TABLE Choix (
     id_choix          INT AUTO_INCREMENT PRIMARY KEY,
     id_scene_source   INT NOT NULL,
@@ -46,7 +47,7 @@ CREATE TABLE Choix (
     FOREIGN KEY (id_scene_dest)   REFERENCES Scene(id_scene),
     FOREIGN KEY (id_objet_donne)  REFERENCES Objet(id_objet)
 );
- 
+
 CREATE TABLE Personnage (
     id_personnage INT AUTO_INCREMENT PRIMARY KEY,
     pseudo        VARCHAR(100) DEFAULT 'Héros',
@@ -57,7 +58,7 @@ CREATE TABLE Personnage (
     cree_le       DATETIME DEFAULT NOW(),
     FOREIGN KEY (id_scene_actuelle) REFERENCES Scene(id_scene)
 );
- 
+
 CREATE TABLE Inventaire (
     id_inventaire INT AUTO_INCREMENT PRIMARY KEY,
     id_personnage INT NOT NULL,
@@ -66,7 +67,7 @@ CREATE TABLE Inventaire (
     FOREIGN KEY (id_personnage) REFERENCES Personnage(id_personnage),
     FOREIGN KEY (id_objet)      REFERENCES Objet(id_objet)
 );
- 
+
 CREATE TABLE HistoriqueProgression (
     id            INT AUTO_INCREMENT PRIMARY KEY,
     id_personnage INT NOT NULL,
@@ -75,887 +76,754 @@ CREATE TABLE HistoriqueProgression (
     FOREIGN KEY (id_personnage) REFERENCES Personnage(id_personnage),
     FOREIGN KEY (id_scene)      REFERENCES Scene(id_scene)
 );
- 
+
 -- ============================================
--- DONNÉES : OBJETS
+-- OBJETS
 -- ============================================
- 
+
 INSERT INTO Objet (id_objet, nom, icone, effet_vie, effet_force) VALUES
 (1,  'Épée rouillée',        '⚔️',   0,   5),
 (2,  'Bouclier en bois',     '🛡️',  10,   0),
 (3,  'Potion de soins',      '🧪',  25,   0),
 (4,  'Grimoire ancien',      '📖',   0,  10),
-(5,  'Arc elfique',          '🏹',   0,   8),
-(6,  'Amulette maudite',     '🔮', -15,  15),
-(7,  'Torche magique',       '🔦',   5,   0),
+(5,  'Torche magique',       '🔦',   5,   0),
+(6,  'Amulette maudite',     '🔮', -15,  20),
+(7,  'Parchemin runique',    '📜',   0,  12),
 (8,  'Clé dorée',            '🗝️',   0,   0),
 (9,  'Pierre de protection', '💎',  15,   5),
-(10, 'Parchemin runique',    '📜',   0,  12),
-(11, 'Fiole d\'adrénaline',  '⚗️',  -5,  20),
-(12, 'Bandeau du guerrier',  '🎗️',   0,   7),
-(13, 'Orbe de lumière',      '🔱',  10,  10),
-(14, 'Cape de l\'ombre',     '🌑',   5,   5),
-(15, 'Médaille d\'honneur',  '🏅',   5,   5);
- 
+(10, 'Orbe de lumière',      '🔱',  10,  10),
+(11, 'Médaille d\'honneur',  '🏅',   5,   5),
+(12, 'Cape de l\'ombre',     '🌑',   5,   8),
+(13, 'Fiole d\'adrénaline',  '⚗️',  -5,  20),
+(14, 'Anneau du pacte',      '💍', -20,  25),
+(15, 'Sceau du conseil',     '📋',   5,   5);
+
 -- ============================================
--- DONNÉES : SCÈNES
--- 1-10   : Acte I — L'Arrivée
--- 11-25  : Acte II — Les Épreuves
--- 26-40  : Acte III — Le Danger Révélé
--- 41-55  : Acte IV — La Confrontation
--- 56-70  : Fins (victoires et défaites)
+-- SCÈNES
+-- Ids 1-10   : Acte I   — L'Arrivée
+-- Ids 11-20  : Acte II  — L'Académie
+-- Ids 21-30  : Acte III — Les Ombres
+-- Ids 31-40  : Acte IV  — La Crise
+-- Ids 41-50  : Acte V   — Le Dénouement
+-- Ids 51-60  : Fins victoires (51-56)
+-- Ids 61-70  : Fins défaites (61-70)
 -- ============================================
- 
+
 INSERT INTO Scene (id_scene, titre, `description`, est_fin, type_fin) VALUES
- 
+
 -- ============================================================
--- ACTE I — L'ARRIVÉE (scènes 1 à 10)
+-- ACTE I — L'ARRIVÉE
 -- ============================================================
- 
+
 (1, 'Les Portes de l\'Académie',
-'La brume matinale enveloppe les tours de cristal de l\'Académie des Mages. Vous êtes debout depuis l\'aube, votre sac sur le dos, votre lettre d\'admission froissée dans la poche. Des centaines de jeunes gens comme vous convergent vers l\'immense portail de pierre dorée. Gravées dans le linteau, des runes pulsent d\'une lumière bleutée : "SCIENTIA · VIRTUS · HONOR".
- 
-Un garde en armure d\'acier vous interpelle : "Halt ! Identifiez-vous, nouvel arrivant." Derrière lui, deux autres gardes surveillent la foule. Vous remarquez qu\'un étudiant près de vous glisse discrètement une pièce de monnaie dans la main d\'un des gardes et passe sans s\'arrêter. Une autre étudiante, elle, tend calmement son parchemin et échange quelques mots courtois avec le garde principal.
- 
-Comment allez-vous aborder votre première impression à l\'Académie ?',
+'Les tours de cristal de l\'Académie percent la brume matinale. Votre lettre d\'admission froissée dans la poche, vous approchez du grand portail doré. Un garde en armure vous barre la route. Derrière lui, deux cents étudiants s\'agitent dans la cour.',
 0, 'neutre'),
- 
-(2, 'L\'Entrée Principale — Hall des Premiers Pas',
-'Votre politesse a manifestement touché le garde, un homme d\'une cinquantaine d\'années au visage buriné. "Bienvenue, jeune étudiant. Première promotion ?" Il tamponner votre parchemin avec soin avant de vous rendre. "Un conseil, gratuitement : ne traînez pas dans les couloirs après la cloche de minuit. Et méfiez-vous de l\'aile est — les travaux magiques ont rendu les murs... poreux."
- 
-Vous pénétrez dans le hall d\'honneur. Le plafond s\'élève à vingt mètres, orné de fresques représentant les grandes batailles magiques de l\'histoire. Sous vos pieds, un pavement de marbre noir et or. Des dizaines de portraits de maîtres défunts vous regardent passer.
- 
-Dans l\'angle droit, un vieux mage à la barbe argentée fouille frénétiquement ses poches en marmonant. Dans l\'angle gauche, un tableau d\'affichage recouvert d\'annonces et de cartes. Au centre, un large couloir mène aux dortoirs.',
+
+(2, 'Le Hall d\'Honneur',
+'Le garde tamponne votre parchemin et vous sourit. Dans le hall aux fresques majestueuses, un vieux mage fouille ses poches avec affolement, et un couloir mène aux dortoirs. Une cloche sonne — premier cours dans vingt minutes.',
 0, 'neutre'),
- 
+
 (3, 'Les Jardins Secrets',
-'Vous longez le mur d\'enceinte, glissant entre deux buissons taillés en forme de dragon. Les jardins de l\'Académie sont une merveille : des plantes luminescentes poussent entre des fontaines de pierre, des papillons aux ailes d\'argent virevoltent autour de fleurs impossibles.
- 
-Alors que vous progressez, votre pied heurte quelque chose de dur. Un livre, relié de cuir brun, à moitié enfoui sous les feuilles mortes. Sur sa couverture, aucun titre — seulement un symbole : un œil ouvert dans un triangle. Vous sentez une légère chaleur émaner de ses pages.
- 
-Plus loin, derrière un if taillé, vous apercevez une torche magique abandonnée, son flamboiement bleu encore vif. Et depuis une fenêtre du premier étage, une silhouette encapuchonnée vous observe fixement, immobile.',
+'Vous longez les jardins luminescents. Votre pied heurte un grimoire au symbole étrange — un oeil dans un triangle. Une torche magique bleue brûle à quelques pas. Depuis une fenêtre du premier étage, une silhouette encapuchonnée vous observe.',
 0, 'neutre'),
- 
+
 (4, 'La Cellule de Détention',
-'Votre tentative de forcer le passage a tourné court. Deux gardes vous ont plaqué au sol avant que vous ayez fait trois pas. "Encore un qui croit que le règlement s\'applique aux autres", a grogné l\'un d\'eux.
- 
-Vous voilà dans une cellule propre mais austère, les poignets liés par des menottes runiques qui empêchent tout usage de magie. Une heure s\'écoule. Puis la porte s\'ouvre. Le directeur Aldric Morwen en personne entre, une silhouette imposante dans sa robe noire brodée d\'argent. Son regard vous jauge longuement.
- 
-"Dites-moi une chose," commence-t-il avec un calme glacial, "pourquoi devrais-je ne pas vous renvoyer chez vous sur-le-champ ?" Il s\'assoit en face de vous et croise les doigts. C\'est votre seule chance de vous expliquer.',
+'Deux gardes vous ont maîtrisé avant que vous fassiez trois pas. Poignets liés par des menottes runiques, vous attendez dans une cellule propre. La porte s\'ouvre : le Directeur Morwen entre, silhouette imposante en robe noire. Il s\'assoit. Il attend.',
 0, 'neutre'),
- 
-(5, 'La Bibliothèque — Section Secrète',
-'Le vieux mage s\'appelle Professeur Elowen Drast, spécialiste des artefacts anciens. Son objet perdu, vous l\'avez retrouvé glissé sous un banc du hall : un pendentif en obsidienne gravé d\'une spirale. Il le serre contre lui avec un soupir de soulagement.
- 
-"Venez," dit-il simplement. Il vous guide à travers un dédale de couloirs que vous n\'auriez jamais trouvé seul, jusqu\'à une porte dérobée derrière une tapisserie. Derrière : la bibliothèque secrète. Des milliers de livres du sol au plafond, certains enchaînés, d\'autres qui flottent lentement. L\'air sent l\'encre vieille et l\'ozone.
- 
-"Ces ouvrages ne sont pas dans les catalogues officiels," murmure Drast. "Choisissez avec discernement." Il vous laisse seul. Trois livres vous attirent particulièrement : un traité de combat magique relié de rouge, un journal personnel sans nom apparent, et un grimoire dont les pages semblent changer de texte selon l\'angle de vue.',
+
+(5, 'La Bibliothèque Secrète',
+'Le vieux mage — Professeur Drast — vous guide derrière une tapisserie jusqu\'à une pièce cachée. Des milliers de livres, certains enchaînés, d\'autres qui flottent. "Choisissez avec discernement", murmure-t-il avant de vous laisser seul.',
 0, 'neutre'),
- 
+
 (6, 'Les Dortoirs — Chambre 7',
-'Les dortoirs de l\'Académie ressemblent davantage à un monastère qu\'à une école : de longues rangées de portes numérotées, des fenêtres en ogive donnant sur la cour intérieure, des bougies magiques qui s\'allument automatiquement au passage. Vous trouvez votre chambre : minuscule mais équipée d\'un bureau, d\'un lit à baldaquin et d\'une étagère vide qui vous tend les bras.
- 
-Elara Fenwick est dans le couloir, adossée au mur comme si elle vous attendait. C\'est une étudiante de deuxième année au regard perçant et aux cheveux coupés court. "Tu es nouveau, n\'est-ce pas ?" Elle vous tend une fiole de liquide bleuté sans attendre votre réponse. "Potion de soins, faite maison. Meilleure que les officielles. Garde-la — tu en auras besoin plus tôt que tu ne le crois."
- 
-Elle baisse la voix. "Ce soir, après la cloche, des choses vont se passer dans l\'aile est. Ne t\'y aventure pas seul. Et ne fais confiance à personne d\'autre que moi ici." Elle disparaît dans l\'escalier avant que vous puissiez lui poser une question.',
+'Elara Fenwick vous attend dans le couloir. Étudiante de deuxième année, regard perçant. Elle vous tend une fiole sans attendre. "Tu en auras besoin." Elle baisse la voix : "Ce soir, dans l\'aile est, ne va pas seul. Ne fais confiance à personne d\'autre que moi."',
 0, 'neutre'),
- 
+
 (7, 'Le Bureau du Directeur',
-'Le bureau du Directeur Morwen occupe tout le sommet de la Tour Centrale. Des murs tapissés de cartes astrales, une bibliothèque personnelle impressionnante, et en son centre, un globe de cristal qui tourne lentement sur lui-même, projetant des reflets irisés sur le plafond.
- 
-Après votre explication — maladroite mais sincère — le directeur reste silencieux un long moment. "Vos motivations sont peut-être honorables," dit-il enfin. "Mais votre méthode révèle une impulsivité dangereuse dans notre domaine." Il se lève et s\'approche de la fenêtre donnant sur les jardins.
- 
-"Je vais vous donner une chance. Une seule. Il y a trois nuits, un artefact a été volé dans notre chambre forte — l\'Orbe de Lumière de Valdris. Nous pensons qu\'il se trouve toujours dans l\'enceinte. Si vous le retrouvez avant la nuit, votre casier sera vierge. Échouez, et vous repartez d\'où vous venez." Il se retourne. "Qu\'en dites-vous ?"',
+'Le bureau de Morwen : cartes astrales aux murs, globe de cristal tournant. Il vous regarde longuement. "Une chance. Un artefact a été volé — l\'Orbe de Valdris. Retrouvez-le avant la nuit. Réussissez, votre casier est vierge. Échouez, vous repartez d\'où vous venez."',
 0, 'neutre'),
- 
+
 (8, 'L\'Atelier des Illusions',
-'Le grimoire trouvé dans les jardins s\'intitule, selon les runes intérieures que vous parvenez à déchiffrer, "Miroirs de Kelvadren — Traité des Illusions Fondamentales". Vous le lisez dans un atelier désaffecté de l\'aile nord, assis sur un tonneau renversé.
- 
-La magie d\'illusion vous vient avec une facilité troublante. En une heure, vous maîtrisez le sort "Double" — créer une copie visuelle de vous-même — et "Voile" — vous rendre visuellement transparent pendant quelques secondes.
- 
-C\'est là que vous voyez le miroir. Il occupe tout un mur de l\'atelier, son cadre d\'argent ouvragé représentant des silhouettes en train de se tordre. Et dans le miroir, quelque chose vous regarde. Pas votre reflet — autre chose. Une entité aux yeux de braise qui s\'approche de la surface de verre en tendant une main fine. Sa voix est un murmure qui résonne directement dans votre crâne : "Libère-moi. Je peux t\'offrir ce qu\'aucun maître ne t\'apprendra jamais."',
+'Le grimoire s\'intitule "Miroirs de Kelvadren". Vous apprenez vite : sort "Double" — copie visuelle — sort "Voile" — invisibilité brève. Un miroir encadré d\'argent occupe un mur entier. Quelque chose vous regarde depuis l\'intérieur. Une voix dans votre crâne : "Libère-moi."',
 0, 'neutre'),
- 
-(9, 'La Prophétie du Grimoire',
-'Le journal sans nom est en réalité le carnet personnel d\'une ancienne étudiante disparue il y a trente ans — Serafina Vael. Ses dernières entrées décrivent, avec une précision glaçante, une organisation secrète au sein même du corps professoral : la Confrérie du Vide. Leur objectif : ouvrir une brèche dimensionnelle sous la Tour Centrale lors de la prochaine Éclipse Magique — dans trois semaines.
- 
-Et la dernière ligne du journal, tracée en rouge : "Ils savent que j\'ai découvert la vérité. Ils viennent. Si vous lisez ceci, fuyez, ou combattez. Il n\'y a pas de troisième option."
- 
-Vous refermez le journal, les mains tremblantes. Dehors, des cloches sonnent — pas les cloches habituelles, mais quelque chose de plus grave, de plus urgent. Et derrière vous, la porte de la bibliothèque s\'ouvre lentement.',
+
+(9, 'Le Journal de Serafina',
+'Le journal sans nom appartient à Serafina Vael, disparue il y a trente ans. Dernière entrée : "La Confrérie du Vide infiltre les maîtres. Ils veulent ouvrir une brèche lors de l\'Éclipse — dans trois semaines. Ils savent que je sais. Fuyez, ou combattez."',
 0, 'neutre'),
- 
-(10, 'Le Premier Cours — Salle Élémentaire',
-'La salle d\'élémentarité est spectaculaire : un amphithéâtre circulaire dont le centre est une arène de sable où se manifestent les sorts. Quarante nouveaux étudiants sont assis en arc de cercle, silencieux et intimidés. Le professeur Aldric — un homme jeune aux manières précises — tourne autour de l\'arène comme un prédateur.
- 
-"L\'affinité élémentaire n\'est pas un choix," déclare-t-il. "C\'est une nature. Mais la nature peut être cultivée ou réprimée. Aujourd\'hui, nous allons découvrir la vôtre." Un par un, les étudiants sont appelés. Certains font jaillir des flammes, d\'autres de l\'eau, de la pierre, du vent. Quand vient votre tour, vous posez la main sur la pierre de test.
- 
-Deux éléments répondent simultanément — le Feu et l\'Eau, en parfaite opposition. Le professeur Aldric écarquille les yeux. "Extraordinaire. Un Dualiste. Cela n\'arrive qu\'une fois par génération." La salle murmure. "Vous devrez choisir votre voie principale — les deux en même temps, c\'est... instable."',
+
+(10, 'Le Cours d\'Élémentarité',
+'Le Professeur Aldric tourne autour de l\'arène. Quand vient votre tour, deux éléments répondent simultanément : Feu et Eau. Aldric s\'arrête net. "Un Dualiste. Une fois par génération." La salle entière murmure. Il vous regarde longuement. "Choisissez votre voie principale."',
 0, 'neutre'),
- 
+
 -- ============================================================
--- ACTE II — LES ÉPREUVES (scènes 11 à 25)
+-- ACTE II — L'ACADÉMIE
 -- ============================================================
- 
-(11, 'La Tour Nord — Escalier des Ombres',
-'La Tour Nord est interdite aux étudiants, mais la lettre de mission du directeur vous donne un laissez-passer. L\'escalier en colimaçon est plongé dans le noir — vos sorts de lumière s\'éteignent après quelques marches, absorbés par quelque chose dans les murs. Vous montez à tâtons.
- 
-Au troisième palier, vous entendez des voix. Deux individus en robes noires discutent à voix basse. "L\'Orbe est en sécurité à l\'étage. Les gardes de Morwen ne savent pas encore que nous l\'avons." Pause. "Et le rituel ?" "Dans trois semaines. L\'Éclipse suffira." Ils descendent vers vous — vous avez deux secondes pour réagir.',
+
+(11, 'La Tour Nord — Escalier',
+'Votre laissez-passer de Morwen en poche, vous montez dans le noir. Les sorts de lumière s\'éteignent mystérieusement. Au troisième palier, deux voix : "L\'Orbe est à l\'étage." "Le rituel dans trois semaines." Les silhouettes descendent vers vous.',
 0, 'neutre'),
- 
-(12, 'Le Pacte Démoniaque',
-'Vous avez posé la main sur la surface du miroir. Le verre est froid comme la mort, puis brûlant, puis votre main traverse la surface comme dans de l\'eau. L\'entité vous saisit le poignet — vous ne pouvez plus reculer.
- 
-Le pacte est instantané : une douleur fulgurate dans le sternum, un flash de lumière noire, et soudain vous voyez le monde différemment. Les flux magiques apparaissent comme des rivières lumineuses. Vous ressentez une puissance nouvelle, étrange, qui n\'est pas la vôtre.
- 
-Mais le miroir est vide. L\'entité a disparu. Et depuis les jardins en bas, vous entendez hurler quelqu\'un.',
+
+(12, 'L\'Orbe en Vue',
+'Quatrième palier : une pièce circulaire, des runes aux murs. Sur un piédestal d\'obsidienne, l\'Orbe pulse — blanc et chaud comme une étoile captive. La porte se referme derrière vous. Une troisième silhouette sort de l\'ombre, bâton de bois noir à la main.',
 0, 'neutre'),
- 
-(13, 'L\'Épreuve des Valeurs',
-'Vous reculez d\'un pas, puis d\'un autre. L\'entité dans le miroir gronde, pousse, supplie, menace — tout à la fois. Mais vous tenez bon. Vous fermez les yeux, cherchez dans votre mémoire le sort de scellement que vous avez lu en passant dans la bibliothèque, et tracez les runes dans l\'air d\'une main ferme.
- 
-Un flash blanc. Le miroir se fissure du haut en bas, puis les morceaux tombent et se réduisent en poussière dorée. Dans le silence qui suit, quelqu\'un applaudit lentement derrière vous.
- 
-C\'est le Directeur Morwen. "Je vous observais depuis le couloir," dit-il. "Ce miroir est en réalité le Test du Miroir de Valdris — une épreuve imposée à tous les vrais étudiants. Neuf sur dix cèdent." Il vous tend une médaille d\'honneur en argent. "Vous venez de rejoindre l\'élite."',
+
+(13, 'Le Combat du Gardien',
+'Le gardien attaque sans un mot. Bâton de bois noir, arcs de lumière sombre. La pièce est étroite. Vos sorts s\'entrechoquent dans un tonnerre de magie. Il est fort — mais peut-être pas plus que vous.',
 0, 'neutre'),
- 
-(14, 'La Salle du Conseil Convoqué',
-'Deux maîtres en robes bordeaux vous escortent jusqu\'à la Salle du Grand Conseil — une pièce en demi-cercle où quinze fauteuils hauts sont disposés face à une tribune. Plusieurs maîtres sont déjà là, certains dans des conversations à voix basse qui s\'interrompent à votre entrée.
- 
-Vous reconnaissez deux visages : le professeur Aldric à droite, l\'air grave, et une femme aux cheveux blancs que vous n\'avez jamais vue, dont le regard vous transperce depuis le fauteuil central. C\'est la Maîtresse Suprême, Yrenne Sol — la véritable autorité de l\'Académie, au-dessus même du directeur.
- 
-"Racontez-nous exactement ce que vous avez lu," dit-elle sans préambule. Sa voix est douce mais absolue. "Ne supprimez aucun détail."',
+
+(14, 'Le Pacte du Miroir',
+'Votre main traverse la surface froide du miroir. L\'entité vous saisit le poignet. Flash noir. Douleur dans le sternum. Soudain, les flux magiques apparaissent comme des rivières de lumière. La puissance est réelle. Le miroir, lui, est vide. Dehors, quelqu\'un hurle.',
 0, 'neutre'),
- 
-(15, 'La Voie du Feu',
-'Vous choisissez le Feu. La décision est viscérale, immédiate — comme si la flamme en vous avait attendu qu\'on lui donne la permission. Dès lors, votre progression en magie du feu est foudroyante. En deux semaines, vous maîtrisez des sorts qu\'il faut normalement des mois pour apprendre.
- 
-Mais le feu a un prix. Vous dormez mal. Des rêves de brasier, de cités en cendres, d\'un phénix qui vous dévore de l\'intérieur. Le professeur Aldric vous convoque. "Votre puissance est réelle," dit-il, "mais vous la laissez vous consumer. La flamme doit être dirigée, pas libérée." Il vous remet un parchemin runique — un exercice de canalisation. "Maîtrisez ceci avant l\'épreuve de la semaine prochaine. Votre vie en dépendra peut-être."',
+
+(15, 'L\'Épreuve des Valeurs',
+'Vous résistez. L\'entité supplie, menace, promet. Vous tracez des runes dans l\'air, les yeux fermés. Flash blanc — le miroir se fissure et tombe en poussière dorée. Quelqu\'un applaudit lentement derrière vous. C\'est le Directeur Morwen. "Neuf sur dix cèdent."',
 0, 'neutre'),
- 
-(16, 'La Voie de l\'Eau',
-'Vous choisissez l\'Eau. La puissance vient différemment — pas comme une explosion, mais comme une marée. Lente, patiente, inévitable. En une semaine vous guérissez une blessure que les meilleurs guérisseurs de l\'Académie avaient déclarée incurable chez un vieux mage. La rumeur se répand.
- 
-Elara vous retrouve à la bibliothèque ce soir-là. "Tu as soigné Professeur Fenwick ?" Elle semble stupéfaite. "Même le directeur n\'y était pas arrivé. Écoute — j\'ai besoin de toi cette nuit. Pas pour combattre. Pour soigner les victimes de ce qui va se passer dans l\'aile est." Elle pose une main sur votre bras. "Fais-moi confiance."',
+
+(16, 'La Voie du Feu',
+'Vous choisissez le Feu. La progression est foudroyante. En deux semaines, des sorts qui prennent normalement des mois. Mais la nuit, des rêves de brasier. Aldric vous convoque : "La flamme vous consume. Disciplinez-la avant que ce soit elle qui vous discipline."',
 0, 'neutre'),
- 
-(17, 'L\'Embuscade au Troisième Palier',
-'Vous plongez dans l\'ombre du renfoncement juste à temps. Les deux silhouettes passent à un mètre de vous sans vous voir. Leurs robes portent un symbole brodé — un cercle vide, comme un soleil éteint.
- 
-Vous attendez trente secondes, puis montez. Quatrième palier : une pièce circulaire, des runes sur les murs, et au centre, sur un piédestal d\'obsidienne, l\'Orbe de Lumière de Valdris. Il pulse doucement, chaud et blanc comme une étoile captive.
- 
-Mais la porte de l\'escalier se referme derrière vous avec un déclic. Et depuis les ombres du fond de la pièce, une troisième silhouette se dresse — plus grande que les deux autres, tenant un bâton de bois noir.',
+
+(17, 'La Voie de l\'Eau',
+'Vous choisissez l\'Eau. Lente, patiente, inévitable. En une semaine, vous guérissez une blessure que les meilleurs guérisseurs déclaraient incurable. La rumeur se répand. Elara vous retrouve le soir : "J\'ai besoin de toi cette nuit. Pas pour combattre. Pour soigner."',
 0, 'neutre'),
- 
-(18, 'Confrontation avec le Gardien Masqué',
-'Le gardien masqué vous attaque sans un mot. Son bâton trace des arcs de lumière noire dans l\'air. Vous esquivez, ripostez. Le combat est brutal, rapide, sans règles. Vos sorts du feu illuminent la pièce comme un orage.',
+
+(18, 'La Voie du Vent',
+'Vous hésitez entre Feu et Eau — le Vent choisit à votre place, vous soulevant légèrement du sol. Aldric note quelque chose. "Troisième élément pour un Dualiste. Exceptionnel." Il vous oriente vers un cours spécial en petite classe : Magie Tactique, enseigné par Yrenne Sol.',
 0, 'neutre'),
- 
-(19, 'Ruse et Illusion',
-'Vous utilisez le sort "Double" appris dans l\'atelier. Votre copie illusoire s\'avance vers le gardien, attirant son attention. Dans sa confusion d\'une seconde, vous plongez, attraper l\'Orbe sur le piédestal, et bondissez vers la fenêtre.',
+
+(19, 'La Magie Tactique',
+'Dix étudiants triés sur le volet. Sol elle-même enseigne : combinaisons élémentaires avancées, contre-sorts, et — plus surprenant — lecture des intentions à travers les flux magiques. Elle semble vous observer plus que les autres.',
 0, 'neutre'),
- 
-(20, 'La Nuit de l\'Aile Est',
-'Elara vous conduit à travers des passages dérobés que vous n\'auriez jamais trouvés seul. L\'aile est de l\'Académie est officiellement fermée pour "restauration", mais derrière les portes condamnées, vous entendez des chants — une mélodie grave et rythmée qui fait vibrer les pierres sous vos pieds.
- 
-Par une lucarne, vous observez : une vingtaine de personnes en robes noires forment un cercle autour d\'une fissure dans le sol qui émet une lumière violette. Parmi elles, vous reconnaissez deux professeurs — dont l\'un est censé être en mission à l\'étranger.
- 
-"La Confrérie du Vide," murmure Elara. "Ils ouvrent un portail. Pas encore assez large pour qu\'ils passent — mais dans trois semaines..." Elle marque une pause. "Ce soir ils vont sacrifier quelque chose pour sceller leur engagement. Nous devons les arrêter. Mais nous sommes deux."',
+
+(20, 'L\'Aile Est — Observation',
+'Depuis une lucarne, vous observez : vingt personnes en robes noires autour d\'une fissure violette dans le sol. Parmi elles, deux professeurs que vous reconnaissez. Les chants font vibrer les pierres. La fissure s\'élargit lentement. Elara est à votre côté, livide.',
 0, 'neutre'),
- 
-(21, 'L\'Alliance avec Elara',
-'Vous et Elara travaillez vite. Elle maîtrise la magie du vent, vous le feu ou l\'eau — ensemble, vous êtes complémentaires. Elle improvise un plan : elle distrait les gardes extérieurs en créant un incident dans le couloir d\'en face, vous entrez par la lucarne et détruisez le nœud central du rituel — la pierre de focus posée au centre du cercle.',
-0, 'neutre'),
- 
-(22, 'Chercher du Renfort',
-'Vous reculez et optez pour alerter le directeur. Cela prend du temps — trop de temps. Quand Morwen arrive avec quatre gardes, la cérémonie est terminée. Les membres de la Confrérie ont disparu. La fissure violette dans le sol est là, refermée mais pas guérie.',
-0, 'neutre'),
- 
-(23, 'Le Traité de Combat Magique',
-'Le livre rouge est un traité militaire : "Arts Cinétiques Avancés — Usage Offensif de la Magie de Combat". Vous le lisez en deux nuits, absorbant des techniques que même les étudiants de troisième année ignorent. Vos réflexes magiques s\'aiguisent. Votre force de frappe double.
- 
-Mais lors d\'un exercice pratique, vous perdez momentanément le contrôle. Un sort frappe un mur avec une force qui fait trembler le bâtiment entier. Le professeur Aldric, qui passait par là, vous regarde avec un mélange d\'alarme et d\'intérêt. "Où avez-vous appris ce sort ?" Vous avez le choix de mentir ou de dire la vérité.',
-0, 'neutre'),
- 
-(24, 'La Vérité sur le Traité',
-'"Dans la bibliothèque secrète — le Professeur Drast m\'y a conduit," répondez-vous franchement.
- 
-Aldric vous fixe un long moment, puis : "Bien. L\'honnêteté mérite sa récompense." Il vous emmène dans son bureau personnel et vous montre quelque chose d\'inattendu : une carte de l\'Académie avec plusieurs points marqués en rouge. "Depuis trois semaines, des incidents magiques anormaux se produisent à ces endroits. Je cherche quelqu\'un de discret et de capable pour enquêter. Êtes-vous intéressé ?"',
-0, 'neutre'),
- 
-(25, 'Le Mensonge sur le Traité',
-'"Je l\'ai trouvé dans les dortoirs, abandonné par un étudiant." Le mensonge sort facilement, peut-être trop.
- 
-Aldric hoche la tête lentement, et vous avez la troublante sensation qu\'il ne vous croit pas. Il confisque votre traité sans commentaire et vous renvoie. Mais deux jours plus tard, vous trouvez dans votre chambre une note non signée : "Je sais ce que tu as lu. Je sais où tu l\'as trouvé. Rejoins-nous, ou crains-nous. — C.V."
- 
-C.V. Confrérie du Vide.',
-0, 'neutre'),
- 
+
 -- ============================================================
--- ACTE III — LE DANGER RÉVÉLÉ (scènes 26 à 40)
+-- ACTE III — LES OMBRES
 -- ============================================================
- 
-(26, 'La Révélation Devant le Conseil',
-'Vous récitez tout ce que vous avez lu dans le journal de Serafina Vael. La salle du conseil devient de plus en plus silencieuse à mesure que vous parlez. Certains maîtres se raidissent, d\'autres blêmissent.
- 
-Quand vous terminez, la Maîtresse Suprême Yrenne Sol reste immobile pendant trente secondes entières. "Montrez-moi ce journal." Vous le tendez. Elle le feuillette rapidement, s\'arrête sur plusieurs pages. Puis elle relève les yeux — mais pas vers vous. Vers deux des maîtres assis dans les fauteuils. "Professeur Cassin. Professeur Wyrd. Sortez de cette salle immédiatement."
- 
-Les deux hommes se lèvent comme des automates. Puis l\'un d\'eux lève la main et lance un sort.',
+
+(21, 'La Salle du Grand Conseil',
+'Quinze fauteuils en demi-cercle. Au centre : la Maîtresse Suprême Yrenne Sol, regard de glace. "Racontez-nous ce que vous avez lu. Sans omettre un seul détail." Un silence absolu dans la salle.',
 0, 'neutre'),
- 
-(27, 'La Bataille dans la Salle du Conseil',
-'Le sort du Professeur Cassin fracasse le lustre central. La salle plonge dans le chaos. Les maîtres loyaux ripostent. Des éclairs magiques traversent la pièce. Vous êtes au milieu de tout ça.
- 
-Yrenne Sol déploie un bouclier d\'une puissance que vous n\'avez jamais vue — une sphère d\'énergie dorée qui absorbe deux sorts simultanément. "Protégez les archives !" crie-t-elle. Vous voyez la porte des archives s\'ouvrir — et l\'un des maîtres traîtres s\'y précipiter.',
+
+(22, 'La Révélation Éclate',
+'À mi-récit, deux maîtres blêmissent. Sol les fixe. "Professeur Cassin. Professeur Wyrd. Sortez." Ils se lèvent. Cassin lève la main — un sort. Le lustre explose. La salle plonge dans le chaos.',
 0, 'neutre'),
- 
-(28, 'Poursuite du Traître',
-'Vous vous élancez après le Professeur Wyrd. Il est rapide pour son âge — il court dans les couloirs en lançant des sorts derrière lui pour vous ralentir. Un mur s\'effondre à vôtre gauche. Une porte se soude. Vous ripostez et gagnez du terrain.',
+
+(23, 'Le Traité de Combat',
+'Le livre rouge — "Arts Cinétiques Avancés" — vous dévore deux nuits. Vos réflexes magiques s\'aiguisent, votre puissance double. Pendant un exercice, votre sort frappe un mur et fait trembler le bâtiment. Aldric apparaît dans l\'embrasure. Il attend une explication.',
 0, 'neutre'),
- 
-(29, 'Protéger la Maîtresse Suprême',
-'Vous choisissez de rester aux côtés d\'Yrenne Sol pendant que les traîtres tentent de la submerger. Votre magie combinée à la sienne crée un effet inattendu : vos flammes et son invocation de lumière fusionnent en un torrent de feu solaire qui neutralise les deux maîtres traîtres d\'un seul arc.
- 
-Quand la poussière retombe, Sol pose une main sur votre épaule. "Votre instinct est bon. Vous avez choisi les personnes plutôt que les documents." Elle marque une pause. "C\'est plus rare qu\'on ne le croit."',
+
+(24, 'La Note Menaçante',
+'Dans votre chambre, une note non signée : "Nous savons ce que tu as lu. Rejoins-nous, ou crains-nous. — C.V." Confrérie du Vide. Deux options : tendre un piège, ou alerter le directeur maintenant.',
 0, 'neutre'),
- 
-(30, 'L\'Investigation avec Aldric',
-'Vous acceptez la mission d\'enquête proposée par le Professeur Aldric. Les points rouges sur sa carte correspondent à des lieux précis : la cave à charbon, la fontaine nord-est, le grenier de la Tour Centrale, et la crypte sous la chapelle — un endroit dont vous ne soupçonniez pas l\'existence.
- 
-En trois jours d\'investigation discrète, vous reconstituez un schéma. Les incidents ne sont pas des accidents : ce sont des balises magiques, disposées en pentagramme. Quelqu\'un prépare un rituel d\'une envergure considérable. Et le point central du pentagramme — l\'épicentre du rituel — se situe exactement sous la Salle du Grand Conseil.',
+
+(25, 'La Cellule de Veille',
+'Aldric vous remet un badge gravé d\'une rune. "Cellule de Veille. Trois membres seulement." Il vous montre une carte avec cinq points rouges — des balises magiques en pentagramme parfait. Le point central se trouve exactement sous la Salle du Grand Conseil.',
 0, 'neutre'),
- 
-(31, 'La Note de la Confrérie',
-'La note de la Confrérie du Vide vous hante. Vous avez deux jours avant qu\'ils contactent à nouveau, selon ce que vous déduisez de leur message. Vous choisissez d\'utiliser ce temps pour préparer soit une fuite, soit un piège.',
+
+(26, 'La Crypte sous la Chapelle',
+'Une trappe sous l\'autel. Un laboratoire souterrain : machines magiques, diagrammes. Au centre — un second Orbe, identique à celui de Valdris, mais d\'une lumière rouge sang. Morwen est là. "J\'espérais que vous ne veniez pas. Mais puisque vous êtes là..."',
 0, 'neutre'),
- 
-(32, 'Tendre un Piège à la Confrérie',
-'Vous falsifiez une réponse à la note, acceptant soi-disant de les rejoindre. Le lieu de rendez-vous qu\'ils fixent — une ancienne salle de cours désaffectée — devient votre terrain. Vous y installez des runes d\'alarme et alertez discrètement Elara.',
+
+(27, 'La Vérité de Morwen',
+'"La Confrérie veut l\'Orbe doré pour ouvrir la brèche. Moi, j\'ai l\'Orbe rouge pour la sceller définitivement. Le rituel demande deux participants. Je suis lié à cet Orbe depuis vingt ans — il me consumera peut-être. Aidez-moi à terminer ce que j\'ai commencé."',
 0, 'neutre'),
- 
-(33, 'L\'Orbe Récupéré — Retour au Directeur',
-'L\'Orbe de Lumière de Valdris entre vos mains est une expérience étrange : il semble vous connaître. Il pulse au rythme de votre cœur, et projette des images fugaces — des fragments de mémoire qui ne sont pas les vôtres. Quelqu\'un d\'autre l\'a tenu longtemps avant vous.
- 
-Vous descendez la tour et vous rendez directement au bureau du directeur. Morwen accueille l\'Orbe avec un soulagement manifeste. "Savez-vous ce qu\'est cet objet réellement ?" dit-il en le posant dans un coffret spécial. "C\'est une clé. La clé d\'un verrou que nous espérons ne jamais avoir à utiliser." Il vous regarde. "Et vous l\'avez traversé deux étages de gardes ennemis pour me le rapporter. Je vous dois des explications."',
+
+(28, 'L\'Alliance Nocturne',
+'Plan d\'Elara : elle distrait les gardes. Vous entrez par la lucarne et détruisez la pierre de focus — le cristal noir au centre du cercle rituel. "Quelques secondes une fois repéré. Pas plus." Elle vous regarde. "Tu peux le faire ?"',
 0, 'neutre'),
- 
-(34, 'Les Explications de Morwen',
-'Assis en face du directeur, vous apprenez l\'existence de la Confrérie du Vide — une société secrète fondée il y a cent ans par d\'anciens maîtres qui croyaient que la magie devait être libérée de toute contrainte éthique. Dispersée et écrasée à plusieurs reprises, elle renaît toujours.
- 
-"Depuis trois ans, ils s\'infiltrent à nouveau," dit Morwen. "J\'ai des soupçons mais pas de preuves. Ce que vous m\'avez rapporté change la donne." Il se lève. "Vous avez fait plus en une journée que mon service de renseignement en six mois. Que voulez-vous en échange ?"',
+
+(29, 'Le Piège',
+'Vous falsifiez une réponse à la note. Rendez-vous dans une salle désaffectée. Elara et vous installez des runes d\'alarme, puis vous attendez dans l\'ombre, immobiles.',
 0, 'neutre'),
- 
-(35, 'La Nuit du Rituel — Avec Elara',
-'Le plan d\'Elara est audacieux au bord de l\'imprudence. Vous entrez par la lucarne. En bas, le cercle est en plein rituel — les chants résonnent, la fissure violette s\'élargit lentement. La pierre de focus, un cristal noir de la taille d\'un poing, est au centre.
- 
-Vous n\'avez que quelques secondes avant d\'être repéré.',
+
+(30, 'L\'Embuscade Réussie',
+'Trois membres arrivent. L\'un est le Professeur Cassin — celui qui vous complimentait la semaine dernière. Il regarde les menottes runiques sans émotion. Pendant qu\'on l\'emmène, il murmure : "Regardez ce que Morwen cache dans la crypte. Puis jugez."',
 0, 'neutre'),
- 
-(36, 'Détruire la Pierre de Focus',
-'Vous plongez. Le vent créé par Elara dans le couloir fait irruption par une fenêtre, dispersant les membres du cercle. Dans la confusion, vous bondissez, attraper la pierre, et concentrez tout ce que vous avez — feu, eau, ou les deux — sur le cristal noir.
- 
-La pierre explose. Une onde de choc magique traverse la pièce. La fissure violette se referme dans un son comme un hurlement. Plusieurs membres de la Confrérie s\'effondrent, étordis. Deux s\'enfuient.
- 
-Elara est à vos côtés une seconde plus tard. "On a réussi." Elle sourit pour la première fois depuis votre rencontre. Puis, plus sombrement : "Mais ils reviendront. Ce n\'était qu\'un avant-poste."',
-0, 'neutre'),
- 
-(37, 'Intervention Tardive',
-'Quand Morwen et ses gardes arrivent, le rituel est interrompu par votre irruption non planifiée — vous avez foncé sans attendre, poussé par un instinct. La Confrérie se disperse. La fissure se referme partiellement, mais pas complètement.
- 
-Le directeur vous regarde au milieu du chaos. "Vous n\'avez pas attendu," dit-il. Ce n\'est pas un reproche. C\'est un constat.',
-0, 'neutre'),
- 
-(38, 'Le Rendez-Vous Piégé',
-'Trois membres de la Confrérie arrivent au rendez-vous. Ils sont méfiants — l\'un d\'eux scanne la salle avant d\'entrer. Votre rune d\'alarme les avertit de sa présence avant qu\'elle ne se déclenche. Ils s\'apprêtent à fuir.
- 
-Elara, cachée derrière la porte, agit en premier.',
-0, 'neutre'),
- 
-(39, 'Un Maître Parmi les Traîtres',
-'Parmi les trois membres capturés se trouve le Professeur Cassin — votre professeur de Théorie Magique. Celui qui, la semaine dernière, vous complimentait sur votre travail écrit.
- 
-Il vous regarde sans émotion. "Vous êtes plus perspicace que la plupart," dit-il. "Cela fait de vous soit un allié précieux, soit un danger. La Confrérie n\'a pas de place pour les dangers."
- 
-Un garde lui pose les menottes runiques. Mais pendant qu\'on l\'emmène, il murmure quelque chose que vous seul entendez : "Regardez ce que Morwen cache dans la crypte. Puis jugez qui sont les vrais traîtres."',
-0, 'neutre'),
- 
-(40, 'La Crypte sous la Chapelle',
-'Vous ne pouvez pas ne pas y aller. La crypte est accessible par une trappe sous l\'autel de la chapelle. En descendant, vous découvrez non pas des tombes, mais un laboratoire souterrain. Des machines magiques, des diagrammes complexes, et au centre : un second Orbe de Lumière, identique à celui que vous avez rapporté, mais d\'une lumière rouge sang.
- 
-Et le directeur Morwen est là, qui vous regarde entrer comme s\'il vous attendait. "J\'espérais que Cassin ne vous parlerait pas," dit-il calmement. "Mais puisque vous êtes là... il est temps que vous connaissiez la vérité complète."',
-0, 'neutre'),
- 
+
 -- ============================================================
--- ACTE IV — LA CONFRONTATION (scènes 41 à 55)
+-- ACTE IV — LA CRISE
 -- ============================================================
- 
-(41, 'La Vérité du Directeur',
-'"La Confrérie du Vide cherche à ouvrir un portail pour laisser entrer quelque chose," dit Morwen. "Moi, je cherche à construire une barrière pour que ça ne se reproduise jamais." Il désigne l\'Orbe rouge. "Les deux Orbes ensemble forment une clé et un verrou. L\'un ouvre la brèche dimensionnelle. L\'autre peut la sceller définitivement — au prix de sa destruction."
- 
-Il s\'approche. "La Confrérie veut l\'Orbe doré pour ouvrir. Je garde l\'Orbe rouge pour sceller. Mais je ne peux pas agir seul — le rituel de scellement demande deux participants." Il s\'arrête. "Vous êtes arrivé ici par hasard, ou peut-être pas. Aidez-moi à terminer ce que j\'ai commencé il y a vingt ans."',
+
+(31, 'La Bataille du Conseil',
+'Des éclairs magiques traversent la salle du Conseil. Sol déploie un bouclier doré qui absorbe deux sorts simultanément. "Protégez les archives !" Wyrd s\'y précipite. Cassin vous vise directement.',
 0, 'neutre'),
- 
-(42, 'Faire Confiance à Morwen',
-'Vous acceptez. Morwen vous explique tout : la Confrérie prépare l\'Éclipse Magique dans six jours — la seule fenêtre pendant laquelle le portail peut être ouvert assez largement. Votre rôle sera de maintenir l\'Orbe doré stable pendant qu\'il actionne l\'Orbe rouge pour sceller définitivement la brèche sous l\'Académie.
- 
-"Le rituel de scellement consumera l\'Orbe rouge," prévient-il. "Et il est possible que cela me consume aussi. Je suis lié à cet Orbe depuis vingt ans." Sa voix ne tremble pas. "C\'est un risque que j\'accepte."',
+
+(32, 'Poursuite de Wyrd',
+'Vous vous élancez après Wyrd dans les couloirs. Il est rapide, lance des sorts derrière lui. Un mur s\'effondre à votre gauche. Une porte se soude. Vous ripostez et gagnez du terrain — mais le chemin mène vers les sous-sols.',
 0, 'neutre'),
- 
-(43, 'Douter de Morwen',
-'Quelque chose dans l\'explication de Morwen ne colle pas. Pourquoi mener cette opération seul depuis vingt ans ? Pourquoi ne pas avoir alerté la Maîtresse Suprême ? Vous posez ces questions directement.
- 
-Morwen hésite — un infime battement d\'ailes. Puis il répond, et sa réponse est trop lisse, trop préparée. Vous n\'êtes pas convaincu. Vous prenez la décision de chercher Yrenne Sol avant d\'aller plus loin.',
+
+(33, 'Retour de l\'Orbe',
+'L\'Orbe de Valdris entre vos mains pulse au rythme de votre coeur — mémoires fugaces d\'un autre. Vous rejoignez le bureau de Morwen. Il accueille l\'Orbe avec un soulagement manifeste, puis vous regarde. "Je vous dois des explications."',
 0, 'neutre'),
- 
-(44, 'Trouver Yrenne Sol',
-'La Maîtresse Suprême est dans ses appartements, encore éveillée malgré l\'heure tardive. Elle écoute votre récit sans vous interrompre. Quand vous terminez, elle ferme les yeux quelques secondes.
- 
-"Aldric Morwen est loyal," dit-elle finalement. "Mais il est seul depuis trop longtemps. Il a peur que je refuse le sacrifice — et il a peut-être raison de le craindre, car je n\'aurais pas laissé un étudiant de première année prendre ce risque." Elle se lève. "Allez lui dire que je viens. Nous ferons le rituel ensemble, comme il aurait dû se faire depuis le début."',
+
+(34, 'Nuit du Rituel — L\'Entrée',
+'Le plan se déploie. Elara disparaît dans le couloir opposé. Un fracas — sa diversion. La lucarne est à deux mètres. En bas, les chants du cercle. La fissure violette pulse. La pierre de focus brille au centre, noire et ardente.',
 0, 'neutre'),
- 
-(45, 'La Nuit de l\'Éclipse — Acte Final',
-'L\'Éclipse Magique commence à minuit. Le ciel au-dessus de l\'Académie prend une teinte violacée, les étoiles disparaissent derrière un voile invisible. Sous la Salle du Grand Conseil, la brèche commence à s\'ouvrir — la Confrérie du Vide a infiltré les fondations depuis des semaines.
- 
-Dans la crypte, vous vous tenez avec Morwen, Sol, et Elara. Les deux Orbes sont posés sur leurs piédestaux respectifs, face à face. Dehors, on entend des combats — les gardes loyaux contre les membres de la Confrérie qui ont déclenché leur assaut final.
- 
-Morwen pose les mains sur l\'Orbe rouge. Sol pose les siennes sur l\'Orbe doré. Ils vous regardent — vous et Elara — pour tenir le cercle de stabilisation. Le rituel commence.',
+
+(35, 'La Pierre Détruite',
+'Vous plongez. Vos mains saisissent le cristal. Toute votre magie sur ce seul point. La pierre explose. La fissure violette se referme dans un hurlement. Plusieurs membres du cercle tombent, étordis. Elara est à vos côtés une seconde plus tard. "On a réussi. Pour ce soir."',
 0, 'neutre'),
- 
-(46, 'Tenir le Cercle',
-'Le rituel est une bataille en lui-même. Des ondes d\'énergie opposées se heurtent à travers vous. Vos os semblent vibrer. Elara est à vos côtés, pâle mais déterminée. Les deux Orbes pulsent de plus en plus vite.
- 
-Et puis la Confrérie enfonce la porte de la crypte.',
+
+(36, 'Sol Révèle les Mensonges',
+'Sol vous convoque. "Je sais ce que vous avez fait dans l\'aile est. Et ce que vous avez trouvé dans la bibliothèque secrète." Elle pose deux dossiers sur son bureau. "La Confrérie est plus grande que Morwen ne vous a dit. Il vous protégeait — mais il vous a aussi menti."',
 0, 'neutre'),
- 
-(47, 'Le Dernier Assaut',
-'Cinq membres de la Confrérie — dont certains que vous reconnaissez — font irruption. Ils ont compris le plan. Ils veulent l\'Orbe doré avant le scellement.
- 
-Vous devez choisir : lâcher le cercle de stabilisation pour combattre, ou tenir coûte que coûte.',
+
+(37, 'Le Doute sur Morwen',
+'Sol vous montre des documents : Morwen correspond secrètement avec un membre de la Confrérie depuis six ans. "Pas pour trahir — pour espionner. Mais la ligne est mince." Elle marque une pause. "Il agit seul parce qu\'il ne fait confiance à personne. Même pas à vous."',
 0, 'neutre'),
- 
-(48, 'Tenir le Cercle contre Tout',
-'Vous tenez. Elara aussi. Les membres de la Confrérie vous frappent de sorts — vous encaissez, vous chancelez, mais vous ne lâchez pas. Votre vie s\'effrite. Mais le rituel avance.
- 
-Morwen et Sol sont en transe profonde. Leurs voix fusionnent en un chant que vous ne comprenez pas mais dont vous sentez la puissance résonner dans votre poitrine comme un second cœur.',
+
+(38, 'Les Deux Orbes Réunis',
+'Les deux Orbes face à face dans la crypte génèrent des arcs d\'énergie visibles entre eux. "Ensemble, ils peuvent sceller la brèche définitivement. Séparément, inutiles. La Confrérie le sait. C\'est pourquoi ils ont volé l\'Orbe doré." Morwen pose ses mains sur le rebord du piédestal.',
 0, 'neutre'),
- 
-(49, 'Lâcher le Cercle pour Combattre',
-'Vous lâchez et attaquez. Vos sorts explosent dans la crypte étroite. Deux membres de la Confrérie tombent. Mais sans vous, le cercle de stabilisation flanche — l\'énergie des deux Orbes se dérègle, créant un feedback magique qui fait saigner Morwen du nez.',
+
+(39, 'L\'Ultimatum',
+'Une lettre signée d\'un cercle vide : "Livrez les deux Orbes avant l\'Éclipse ou nous frappons la ville voisine. Douze heures." Morwen est livide. Sol est calme. Elara serre les poings. Vous devez décider maintenant.',
 0, 'neutre'),
- 
-(50, 'La Brèche Résiste',
-'Le rituel dure plus longtemps que prévu. La brèche ne veut pas se fermer — quelque chose de l\'autre côté pousse. Morwen tremble. Sol psalmodie plus fort. Vous sentez le sol craquer sous vous.',
+
+(40, 'L\'Alliance Finale',
+'Morwen, Sol, Elara et vous — quatre personnes dans la crypte. L\'Éclipse est dans six heures. Le plan est simple dans ses grandes lignes, périlleux dans ses détails : tenir le rituel de scellement quoi qu\'il arrive dehors. Ensemble.',
 0, 'neutre'),
- 
-(51, 'Donner le Reste de sa Magie',
-'Dans un geste instinctif, vous orientez toute votre magie — pas vers la défense ou l\'attaque, mais vers le rituel lui-même. Vous devenez un conduit. L\'énergie vous traverse comme une rivière, de la tête aux pieds, brûlante et glacée à la fois.',
-0, 'neutre'),
- 
-(52, 'La Brèche se Ferme',
-'Un son comme la fin du monde. L\'Orbe rouge éclate en mille fragments lumineux. La brèche dimensionnelle se referme avec un bruit de porte claquée dans un palais vide.
- 
-Le silence.
- 
-Morwen est agenouillé, épuisé mais vivant. Sol, qui ne plie jamais, a les larmes aux yeux. Elara vous attrape avant que vous ne tombiez.',
-0, 'neutre'),
- 
-(53, 'L\'Académie Sauvée, Mais À Quel Prix',
-'Vous reprenez conscience dans l\'infirmerie, trois heures plus tard. Elara est là, assise à votre chevet. "Tu as tenu," dit-elle simplement.
- 
-Votre magie est... différente. Pas disparue, mais transformée. Le passage de l\'énergie des deux Orbes à travers vous a laissé une trace. Vous pouvez sentir les flux magiques d\'une façon nouvelle, comme si vous voyiez une couleur supplémentaire que les autres ne perçoivent pas.',
-0, 'neutre'),
- 
-(54, 'Les Traîtres Jugés',
-'Dans les jours qui suivent, la Confrérie du Vide est démantelée. Les membres capturés sont jugés par le Grand Conseil. Certains sont des professeurs de longue date — leur trahison secoue l\'Académie jusqu\'au fondations. Mais l\'institution tient.
- 
-Votre témoignage est crucial dans trois des procès. Le Professeur Cassin vous regarde pendant que vous témoignez. Son expression n\'est pas la haine — c\'est quelque chose de plus complexe. La résignation, peut-être.',
-0, 'neutre'),
- 
-(55, 'Une Proposition Inattendue',
-'Trois semaines après l\'Éclipse, Yrenne Sol vous convoque seule à seule. Elle vous offre deux choses : un poste d\'assistant de recherche — rare pour un étudiant de première année — et quelque chose de plus personnel. La possibilité de lire le reste du journal de Serafina Vael, dont elle garde la suite dans ses propres archives.
- 
-"Serafina était ma meilleure étudiante," dit-elle doucement. "Elle a sacrifié sa vie pour prévenir ce qui vient de se passer. Ce que vous avez fait... c\'est ce qu\'elle aurait voulu faire si elle en avait eu la chance." Elle vous tend les pages. "Lisez. Puis décidez de votre suite."',
-0, 'neutre'),
- 
+
 -- ============================================================
--- FINS VICTOIRES (scènes 56 à 62) — longues et variées
+-- ACTE V — LE DÉNOUEMENT
 -- ============================================================
- 
-(56, 'FIN VICTOIRE I — Le Champion de l\'Académie',
+
+(41, 'La Nuit de l\'Éclipse',
+'Minuit. Le ciel vire au violet. La brèche sous la Salle du Conseil commence à s\'ouvrir. Des combats au-dessus — gardes loyaux contre la Confrérie. Dans la crypte : les deux Orbes sur leurs piédestaux. Morwen et Sol en transe. Elara et vous formez le cercle de stabilisation.',
+0, 'neutre'),
+
+(42, 'L\'Assaut Final',
+'Cinq membres de la Confrérie défoncent la porte de la crypte. Ils visent les Orbes. Morwen et Sol ne peuvent pas interrompre la transe — le rituel romprait. Elara vous regarde. Vous n\'avez que des secondes.',
+0, 'neutre'),
+
+(43, 'Tenir le Cercle',
+'Vous ne bougez pas. Les sorts vous frappent — vous encaissez, chanceler, mais les mains restent dans la position du cercle. Elara couverte de sang tient aussi. La brèche tremble. Le rituel avance.',
+0, 'neutre'),
+
+(44, 'Combattre les Envahisseurs',
+'Vous lâchez. Votre magie explose dans la crypte — deux membres tombent. Mais sans vous, le cercle fléchit. Morwen saigne du nez. Sol psalmodie plus vite pour compenser. La brèche résiste.',
+0, 'neutre'),
+
+(45, 'Le Sacrifice de Morwen',
+'L\'Orbe rouge explose. Morwen est projeté contre le mur. La brèche se referme dans un son comme une porte claquée dans un palais vide. Elara court vers lui. Ses yeux sont ouverts. Il respire, à peine. "C\'était... prévu", dit-il.',
+0, 'neutre'),
+
+(46, 'La Brèche Fermée',
+'Silence total dans la crypte. Les membres de la Confrérie encore debout s\'effondrent — la brèche était leur source de puissance. Elara s\'appuie contre vous. Vous regardez les deux Orbes : l\'un doré, intact. L\'autre réduit en poussière d\'argent.',
+0, 'neutre'),
+
+(47, 'L\'Après-Éclipse',
+'L\'aube sur l\'Académie. Arrestations, interrogatoires, larmes. Cassin est jugé. Wyrd est en fuite. Morwen est à l\'infirmerie, vivant mais diminué. Sol préside le Grand Conseil en urgence. Elle vous convoque dans trois heures.',
+0, 'neutre'),
+
+(48, 'La Convocation de Sol',
+'"Vous avez trois options devant vous." Sol pose trois documents sur son bureau, chacun avec un sceau différent. "Je veux que vous les connaissiez toutes avant de choisir. Prenez le temps."',
+0, 'neutre'),
+
+(49, 'La Brèche Partiellement Fermée',
+'Le rituel a dérape. La brèche est fermée à moitié. Un éclat dimensionnel reste dans les fondations — perturbations magiques toutes les six nuits, zones inutilisables. Morwen, épuisé : "Ce n\'est pas suffisant. Il faudra recommencer."',
+0, 'neutre'),
+
+(50, 'Ce Qui Reste',
+'L\'Académie est debout. Vous aussi, à peine. Ce que vous faites maintenant — les choix que vous posez dans les jours qui suivent — définira qui vous serez ici. Les portes ouvertes ne le restent pas éternellement.',
+0, 'neutre'),
+
+-- ============================================================
+-- FINS — VICTOIRES (51-56)
+-- ============================================================
+
+(51, 'VICTOIRE I — Le Champion',
 '🏆 VICTOIRE — "Le Champion de l\'Académie"
- 
-Trois mois ont passé depuis la nuit de l\'Éclipse Magique.
- 
-Le Grand Amphithéâtre de l\'Académie est comble pour la première fois depuis dix ans. Sur l\'estrade, le Directeur Morwen — remis de l\'épreuve du rituel, les tempes un peu plus grises mais le regard aussi acéré — présente la cérémonie annuelle des Distinctions. Vous êtes dans la rangée du premier rang, entre Elara et le Professeur Aldric, qui a refusé de s\'asseoir dans les fauteuils des maîtres pour cette occasion.
- 
-Quand Yrenne Sol prononce votre nom, la salle retient son souffle une demi-seconde, puis applaudit. Vous montez sur l\'estrade. La Médaille de l\'Académie — accordée pour la dernière fois il y a quarante-deux ans — est accrochée à votre veste par les mains de la Maîtresse Suprême elle-même.
- 
-"Ce n\'est pas pour la victoire du soir de l\'Éclipse," dit-elle dans le micro, pour que toute la salle entende. "C\'est pour ce que vous avez fait avant : chercher la vérité sans en avoir reçu l\'ordre, la partager sans en avoir tiré profit, et tenir quand tout vous encourageait à lâcher."
- 
-Après la cérémonie, Elara vous retrouve dans les jardins. "Alors, Champion de l\'Académie," dit-elle avec son demi-sourire habituel. "Tu comptes faire quoi de tout ça ?"
- 
-La réponse est simple : continuer. Il reste des mystères dans cette école. Le journal de Serafina suggère d\'autres secrets encore enfouis. L\'Orbe rouge a disparu lors de son explosion, mais l\'Orbe doré est intact — et selon les notes de Morwen, il existe peut-être un troisième Orbe quelque part au-delà des frontières de l\'empire.
- 
-Le soleil se couche sur les tours de cristal. Pour la première fois depuis votre arrivée, vous regardez ces tours non plus comme une destination, mais comme un point de départ.
- 
-Votre histoire à l\'Académie ne fait que commencer.',
+
+Trois mois après l\'Éclipse. Le Grand Amphithéâtre est comble pour la première fois depuis dix ans.
+
+Sol épingle la Médaille de l\'Académie sur votre veste — accordée pour la dernière fois il y a quarante-deux ans. "Pas pour la victoire. Pour avoir cherché la vérité sans en avoir reçu l\'ordre, l\'avoir partagée sans en tirer profit, et avoir tenu quand tout vous encourageait à lâcher."
+
+Elara dans les jardins après la cérémonie : "Alors, Champion. Tu comptes faire quoi ?"
+
+Il reste des mystères. Le journal de Serafina suggère d\'autres secrets enfouis. Wyrd est encore en fuite. Et l\'Orbe doré, intact dans la crypte, attend peut-être que quelqu\'un comprenne à quoi il sert vraiment.
+
+Pour la première fois, vous regardez les tours de cristal non plus comme une destination, mais comme un point de départ.',
 1, 'victoire'),
- 
-(57, 'FIN VICTOIRE II — Le Sage des Valeurs',
-'🏆 VICTOIRE — "Le Sage des Valeurs"
- 
-Six semaines après la nuit de l\'Éclipse.
- 
-Vous êtes dans la bibliothèque secrète — celle où le Professeur Drast vous avait conduit votre premier jour. Mais cette fois, vous y êtes seul, par invitation officielle. Drast est assis dans son fauteuil habituel, entouré de ses livres comme d\'une armure douce.
- 
-"Vous savez pourquoi j\'ai gardé cette bibliothèque secrète ?" dit-il sans préambule. "Pas pour protéger les livres. Pour protéger les lecteurs. Ces ouvrages testent les gens. Ils révèlent ce qu\'ils sont vraiment." Il vous regarde. "Vous avez refusé le démon dans le miroir. Vous avez refusé de rejoindre la Confrérie malgré la menace. Vous avez refusé de mentir devant le conseil."
- 
-Il se lève et prend un livre sur l\'étagère derrière lui — un volume simple, sans décoration. "Serafina Vael avait commencé à écrire un guide pour les futures générations. Elle n\'a jamais pu le terminer." Il vous tend le livre. Les premières pages sont écrites dans une main féminine soignée. Le reste est vide.
- 
-"La Maîtresse Sol pense que vous devriez le compléter," dit Drast simplement. "Pas maintenant — vous avez le temps. Mais un jour."
- 
-C\'est ainsi que vous comprenez ce que l\'Académie vous a vraiment appris : les sorts, les formules, les théories — tout ça s\'apprend dans les livres. Mais la sagesse, elle, ne s\'enseigne pas. Elle se forge, épreuve après épreuve, refus après refus, dans les moments où il serait si facile de faire le mauvais choix.
- 
-Vous ouvrez le livre vide et cherchez une plume.',
+
+(52, 'VICTOIRE II — Le Sage',
+'🏆 VICTOIRE — "Le Sage Vertueux"
+
+Six semaines après l\'Éclipse. Drast vous retrouve seul dans la bibliothèque secrète.
+
+Il pose un livre sur la table — simple, sans décoration. Les premières pages sont écrites dans une main soignée : Serafina Vael. Le reste est vide.
+
+"Elle n\'a jamais pu le terminer. Sol pense que vous devriez."
+
+Vous avez appris une chose depuis votre arrivée : les sorts s\'apprennent dans les livres. La sagesse, elle, se forge dans les refus — chaque fois qu\'il était si facile de faire le mauvais choix et que vous ne l\'avez pas fait.
+
+Vous ouvrez le livre vide. Vous cherchez une plume.',
 1, 'victoire'),
- 
-(58, 'FIN VICTOIRE III — Le Grand Guérisseur',
+
+(53, 'VICTOIRE III — Le Guérisseur',
 '🏆 VICTOIRE — "Le Grand Guérisseur"
- 
-Deux mois après la nuit de l\'Éclipse.
- 
-L\'infirmerie de l\'Académie n\'a jamais été aussi fréquentée. Le combat contre la Confrérie a laissé des blessures — physiques pour certains, magiques pour d\'autres. Vous passez vos après-midis libres ici, aux côtés de l\'Archiguérisseuse Maren, une femme silencieuse aux mains sûres.
- 
-"Tu as un don naturel," dit-elle un jour en vous regardant soigner la brûlure magique d\'un garde. "Mais ce n\'est pas juste la technique. C\'est l\'attention que tu portes aux gens. Tu regardes le patient, pas la blessure."
- 
-Ce soir-là, on vous apporte un cas que Maren considérait comme perdu : un jeune étudiant de deuxième année, victime d\'un sort de corruption porté par un membre de la Confrérie, dont la magie propre se retournait lentement contre lui. Les livres disaient que c\'était irréversible.
- 
-Vous passez quatre heures à travailler, en combinant ce que vous avez appris sur l\'eau — la guérison, la purification — avec une intuition que vous n\'auriez pas eue trois mois plus tôt. À l\'aube, l\'étudiant respire normalement.
- 
-Maren, dans l\'encadrement de la porte, vous regarde sans rien dire pendant un long moment. Puis : "Je vais recommander que vous suiviez le cursus de Magie Médicale en parallèle de votre formation principale. C\'est inhabituel en première année." Elle marque une pause. "Beaucoup de choses semblent vous réussir mal en première année."
- 
-C\'est une blague. Vous ne l\'auriez pas compris à votre arrivée.
- 
-Dehors, l\'Académie se réveille sous un ciel clair. Quelqu\'un a planté des fleurs nouvelles dans les jardins. Vous ne savez pas qui. Vous décidez que ça n\'a pas d\'importance.',
+
+Deux mois après l\'Éclipse. Un étudiant arrive à l\'infirmerie — sort de corruption, réputé irréversible. Vous travaillez quatre heures, seul. Eau, purification, une intuition que vous n\'auriez pas eue en début d\'année. À l\'aube, il respire normalement.
+
+L\'Archiguérisseuse Maren, dans l\'encadrement de la porte : "Je recommande un cursus de Magie Médicale en parallèle de votre formation. Inhabituel pour un premier-an." Pause. "Beaucoup de choses vous réussissent mal en première année."
+
+C\'est une blague. Vous ne l\'auriez pas compris à votre arrivée.',
 1, 'victoire'),
- 
-(59, 'FIN VICTOIRE IV — L\'Enquêteur de l\'Ombre',
+
+(54, 'VICTOIRE IV — L\'Enquêteur',
 '🏆 VICTOIRE — "L\'Enquêteur de l\'Ombre"
- 
-Cinq semaines après la nuit de l\'Éclipse.
- 
-Le Professeur Aldric vous remet officiellement un badge discret — une rune gravée sur un morceau de métal ordinaire, rien qui attirerait l\'attention. "Vous faites maintenant partie de la Cellule de Veille," dit-il. "Trois personnes dans toute l\'Académie ont ce badge. Vous, moi, et quelqu\'un d\'autre dont vous n\'avez pas besoin de savoir le nom pour l\'instant."
- 
-Votre rôle : continuer les enquêtes sur les anomalies magiques, identifier d\'éventuels membres résiduels de la Confrérie, et documenter toute activité suspecte. Concrètement, cela signifie que vous menez une double vie : étudiant le jour, enquêteur la nuit.
- 
-C\'est épuisant, exaltant, et parfois effrayant.
- 
-Trois semaines plus tard, vous identifiez un réseau de communication encodée utilisé par des membres de la Confrérie encore en fuite. Aldric présente vos découvertes au Grand Conseil. Deux arrestations suivent dans les jours qui viennent. Votre nom n\'est jamais mentionné dans les rapports officiels.
- 
-"C\'est le travail," dit Aldric quand vous lui faites remarquer que votre contribution disparaît dans l\'anonymat. "Les meilleurs enquêteurs sont ceux dont on n\'entend jamais parler." Il marque une pause. "Cela ne vous dérange pas ?"
- 
-Vous réfléchissez honnêtement. Non. Ce qui vous importe, c\'est que la fissure sous l\'Académie est fermée, que la Confrérie est affaiblie, et que les couloirs de cette école sont un peu plus sûrs qu\'ils ne l\'étaient il y a deux mois.
- 
-Vous avez accompli quelque chose de réel. Ça suffit — pour l\'instant.',
+
+Aldric vous remet un badge discret — une rune sur un morceau de métal ordinaire. Rien qui attirerait l\'attention.
+
+"Cellule de Veille. Trois membres. Vous êtes le troisième."
+
+Double vie : étudiant le jour, enquêteur la nuit. Trois semaines plus tard, vous identifiez un réseau de communication encodée de membres de la Confrérie en fuite. Deux arrestations suivent. Votre nom n\'est jamais mentionné dans les rapports.
+
+"Les meilleurs enquêteurs sont ceux dont on n\'entend jamais parler."
+
+Non. Ça ne vous dérange pas.',
 1, 'victoire'),
- 
+
+(55, 'VICTOIRE V — L\'Héritière de Serafina',
+'🏆 VICTOIRE — "L\'Héritière"
+
+Sol pose sur son bureau le reste du journal de Serafina Vael — pages qu\'elle gardait dans ses propres archives depuis trente ans.
+
+"Elle était ma meilleure étudiante. Ce que vous avez fait cette nuit, c\'est ce qu\'elle aurait voulu faire si elle en avait eu la chance."
+
+Vous lisez jusqu\'au soir. Serafina avait découvert bien plus que la Confrérie : une carte de trente-deux brèches dormantes à travers l\'empire, dessinée à la main.
+
+Trente et un points restent inexpliqués.
+
+"Prenez-la, dit Sol. Et prenez le temps qu\'il faut."',
+1, 'victoire'),
+
+(56, 'VICTOIRE VI — Le Duo Légendaire',
+'🏆 VICTOIRE — "Le Duo Légendaire"
+
+Elara et vous êtes convoqués ensemble devant le Grand Conseil.
+
+Sol annonce la création d\'une nouvelle division : la Brigade de Réponse aux Anomalies Magiques. Deux étudiants en première année à sa tête — fait sans précédent.
+
+"Deux cerveaux complémentaires ont accompli en une nuit ce que notre service de renseignement n\'a pas réussi en trois ans."
+
+Elara vous regarde de côté. "On est coéquipiers officiels maintenant."
+
+"On l\'était déjà."
+
+Le premier dossier atterrit sur votre bureau le lendemain. Une anomalie à deux jours de route. Wyrd a peut-être été repéré.',
+1, 'victoire'),
+
 -- ============================================================
--- FINS DÉFAITES (scènes 60 à 65) — longues et variées
+-- FINS — DÉFAITES (61-70)
 -- ============================================================
- 
-(60, 'FIN DÉFAITE I — La Défaite du Voleur',
+
+(61, 'DÉFAITE I — La Tour Perdue',
 '💀 DÉFAITE — "La Chute dans la Tour"
- 
-La confrontation avec le gardien masqué s\'est mal terminée. Ses sorts ont brisé vos défenses une à une, méthodiquement, sans haine — juste de l\'efficacité. L\'Orbe de Lumière vous a glissé des doigts quand vous avez perdu connaissance.
- 
-Vous vous réveillez dans l\'infirmerie. Deux côtes fissurées, une brûlure magique sur l\'avant-bras gauche. Dehors, la nuit est tombée. Elara est là, à votre chevet, mais son regard vous dit tout avant qu\'elle parle.
- 
-"L\'Orbe est parti. Ils ont quitté l\'Académie." Elle marque une pause. "Le directeur est au courant."
- 
-Morwen vient vous voir le lendemain matin. Il ne crie pas — c\'est presque pire. Il est calme, le regard vide d\'une quelconque surprise. "Je vous avais dit de récupérer l\'Orbe, pas d\'affronter ses gardiens seul," dit-il. "Ce sont deux choses différentes."
- 
-Votre dossier d\'admission est suspendu. Pendant trois semaines, vous suivez les cours sans statut officiel, dans une sorte de limbe administratif. Certains étudiants le savent. D\'autres, non. Le Professeur Aldric continue de vous enseigner normalement — c\'est peut-être votre seul ancrage.
- 
-Au bout de trois semaines, le Grand Conseil statue : vous restez, mais sans les crédits de ce trimestre. Vous repartez à zéro.
- 
-C\'est humiliant. C\'est juste. Et au fond, dans les moments de silence avant de vous endormir, vous repassez en boucle ce moment dans la tour où vous avez choisi le combat frontal alors qu\'il existait d\'autres options.
- 
+
+Le gardien vous a démoli méthodiquement. L\'Orbe vous a glissé des doigts quand vous avez perdu connaissance.
+
+Infirmerie. Deux côtes fissurées. Elara à votre chevet, regard vide.
+
+Morwen vient le lendemain. Il ne crie pas. "Je vous avais dit de récupérer l\'Orbe, pas d\'affronter ses gardiens seul. Ce sont deux choses différentes."
+
+Votre dossier est suspendu trois semaines. Aldric continue de vous enseigner — seul ancrage. Le Grand Conseil statue : vous restez, sans les crédits du trimestre. Repartir à zéro.
+
 La leçon est amère. Elle restera.',
 1, 'defaite'),
- 
-(61, 'FIN DÉFAITE II — Consumé par les Ténèbres',
-'💀 DÉFAITE — "Le Prix du Pacte"
- 
-Le pouvoir du démon était réel. Vous l\'avez utilisé.
- 
-Les premiers jours, c\'était grisent. Vos sorts atteignaient une puissance que vos camarades mettaient des années à acquérir. Les professeurs vous regardaient avec une perplexité teintée d\'admiration. Vous faisiez semblant de ne rien remarquer d\'anormal.
- 
-Mais chaque nuit, il revenait. Pas dans le miroir — le miroir était brisé — mais dans vos rêves. L\'entité aux yeux de braise, qui vous rappelait doucement, patiemment, que rien n\'est gratuit.
- 
-La troisième semaine, vous avez perdu le contrôle pendant un cours. Un sort de feu, destiné à la cible de pratique, a dévié et incendié le bureau du Professeur Aldric. Personne n\'a été blessé, mais la violence de la déflagration — dix fois supérieure à ce que vous aviez voulu — a tout dit.
- 
-Aldric vous a regardé dans les yeux après. Longuement. "Ce n\'est pas vous qui avez fait ça," a-t-il dit doucement. Ce n\'était pas une question.
- 
-Le Professeur Drast a diagnostiqué la contamination démoniaque en vingt minutes de consultation. Le traitement existe, mais il est long et douloureux. Pendant six semaines, vous ne pouvez pas utiliser la magie. Vous restez à l\'Académie, mais confiné à des tâches non magiques — bibliothécaire assistant, aide aux cuisines, gardien de nuit.
- 
-C\'est dans cette période que vous comprenez réellement ce que vous aviez failli devenir. Et c\'est dans cette période aussi que vous rencontrez, à la bibliothèque, un livre sur les pactes démoniaques écrit par quelqu\'un qui avait traversé exactement ce que vous traversez.
- 
-Il s\'appelait Aldric Morwen. Quarante ans plus tôt.',
+
+(62, 'DÉFAITE II — Le Prix du Pacte',
+'💀 DÉFAITE — "Consumé par les Ténèbres"
+
+Le pouvoir du démon était réel. Vous l\'avez utilisé. Les premiers jours, grisants. Les nuits, l\'entité revenait — dans vos rêves, patiente.
+
+Troisième semaine : vous perdez le contrôle. Un sort incendie le bureau d\'Aldric. Personne n\'est blessé, mais la violence parle.
+
+Drast diagnostique la contamination démoniaque en vingt minutes. Six semaines sans magie. Tâches non magiques — bibliothécaire, aide aux cuisines.
+
+Dans cette période, vous trouvez un livre sur les pactes démoniaques. L\'auteur : Aldric Morwen. Écrit quarante ans plus tôt.
+
+Vous n\'êtes pas le premier.',
 1, 'defaite'),
- 
-(62, 'FIN DÉFAITE III — Trahi et Banni',
-'💀 DÉFAITE — "Le Mauvais Camp"
- 
-Vous avez rejoint la société secrète. Sur le moment, les arguments semblaient tenir : la Confrérie du Vide promettait une magie libérée de toute contrainte institutionnelle, un accès aux connaissances que l\'Académie censurait, et une fraternité entre ceux qui refusaient de se plier aux règles arbitraires des anciens.
- 
-Vous y avez cru pendant trois semaines.
- 
-La désillusion est venue progressivement. D\'abord : des tâches moralement troubles présentées comme des "épreuves d\'engagement". Puis : des ordres. Pas des suggestions — des ordres. Voler des documents dans le bureau d\'Aldric. Désactiver une rune de sécurité dans l\'aile est. Surveiller les allées et venues de la Maîtresse Suprême.
- 
-Quand vous avez refusé la troisième commande, ils ne vous ont pas menacé. Ils ont simplement utilisé ce que vous aviez déjà fait. Proof d\'implication, ont-ils dit. Une dénonciation anonyme est arrivée au bureau du directeur deux jours plus tard.
- 
-Le procès a duré une semaine. Vous avez dit la vérité — toute la vérité, y compris vos actes. Aldric a témoigné en votre faveur. Morwen est resté neutre. Sol a écouté sans expression.
- 
-Le verdict : exclusion temporaire de dix-huit mois et travaux d\'intérêt général pour l\'Académie. Pas d\'effacement de votre magie — c\'est une grâce, selon les standards habituels pour les affaires de cette nature.
- 
-Vous quittez l\'Académie par la porte principale, un matin gris de novembre. Le garde qui vous avait accueilli votre premier jour est là. Il vous regarde sans rien dire.
- 
-Dix-huit mois. Et la possibilité — pas la garantie, la possibilité — de recommencer.',
+
+(63, 'DÉFAITE III — Le Mauvais Camp',
+'💀 DÉFAITE — "Trahi et Banni"
+
+Les arguments de la Confrérie semblaient tenir : magie libre, connaissances censurées. Vous y avez cru trois semaines.
+
+La désillusion : des ordres. Voler des documents. Désactiver des runes. Surveiller Sol. Quand vous avez refusé la troisième commande, ils ont utilisé vos actes passés. Dénonciation anonyme.
+
+Procès d\'une semaine. Vous dites toute la vérité. Aldric témoigne pour vous.
+
+Verdict : exclusion temporaire dix-huit mois. Pas d\'effacement magique — une grâce.
+
+Vous quittez par la porte principale un matin gris. Le garde qui vous avait accueilli est là. Il ne dit rien.',
 1, 'defaite'),
- 
-(63, 'FIN DÉFAITE IV — L\'Incendie de l\'Aile Est',
-'💀 DÉFAITE — "La Flamme Incontrôlée"
- 
-Vous aviez choisi le Feu. Le Feu vous a choisi aussi — mais différemment.
- 
-L\'incident s\'est produit lors de l\'Épreuve de Maîtrise en fin de premier trimestre. Un exercice standard : contrôler une flamme pendant trente secondes, puis l\'éteindre. Vous l\'aviez fait des dizaines de fois en pratique privée.
- 
-Mais ce jour-là, la salle était pleine. Des dizaines de regards posés sur vous. Et quelque chose dans cette pression a déréglé quelque chose en vous. La flamme a grandi. Vous avez essayé de la contenir. Elle a grandi encore. Vous avez paniqué — et la panique est la pire ennemie du feu.
- 
-Le sortilège d\'extinction d\'urgence du Professeur Aldric a arrêté les dégâts avant que l\'incendie ne se propage au-delà de l\'aile est. Personne n\'a été grièvement blessé. Un étudiant a eu une brûlure au bras. L\'aile est est inutilisable pour trois mois.
- 
-Dans les jours qui suivent, vous découvrez progressivement l\'étendue de vos erreurs : vous n\'aviez pas suivi les exercices de canalisation qu\'Aldric vous avait donnés. Vous aviez préféré explorer la puissance brute au lieu de la discipliner. Et la nuit avant l\'épreuve, vous aviez lu encore un chapitre du traité de combat offensif au lieu de vous reposer.
- 
-L\'Académie ne vous exclut pas. Elle vous rétrograde. Vous suivez un programme de remédiation — un an de magie fondamentale, recommençant depuis le début, sous supervision constante.
- 
-C\'est long. C\'est humble. Et le professeur qui supervise votre remédiation est, ironiquement, le Professeur Aldric lui-même, qui ne vous reproche rien et qui recommence patiemment à vous enseigner ce que vous auriez dû écouter la première fois.',
+
+(64, 'DÉFAITE IV — La Flamme Incontrôlée',
+'💀 DÉFAITE — "L\'Incendie de l\'Aile Est"
+
+L\'Épreuve de Maîtrise. Un exercice standard : contrôler une flamme trente secondes, l\'éteindre. Pratiqué des dizaines de fois.
+
+Mais la salle était pleine. Des regards. Quelque chose s\'est déréglé. La flamme a grandi. Vous avez paniqué — la panique est la pire ennemie du feu.
+
+Le sort d\'extinction d\'Aldric arrête les dégâts. Un étudiant : brûlure au bras. L\'aile est : inutilisable trois mois.
+
+L\'Académie ne vous exclut pas. Programme de remédiation — un an de magie fondamentale supervisé par Aldric. Il ne vous reproche rien. Il recommence, patiemment, depuis le début.',
 1, 'defaite'),
- 
-(64, 'FIN DÉFAITE V — La Fuite',
+
+(65, 'DÉFAITE V — La Fuite',
 '💀 DÉFAITE — "Ceux Qui Ne Tiennent Pas"
- 
-Vous avez fui.
- 
-Ce n\'est pas une décision que vous avez prise consciemment — c\'est une accumulation. La pression de la mission du directeur. La menace de la Confrérie. Le sentiment d\'être trop petit pour ce qui se passait autour de vous. Et un soir, votre sac était fait et vous étiez dans les jardins, glissant vers la porte secondaire comme vous étiez entré votre premier jour.
- 
-Personne ne vous a arrêté. Personne ne vous a couru après. Vous avez parcouru cinq kilomètres sur la route de terre avant de vous asseoir au bord d\'un fossé, seul dans le noir, avec l\'Académie visible en silhouette derrière vous, ses tours de cristal toujours lumineuses.
- 
-Vous avez réfléchi longtemps là, dans ce fossé.
- 
-Vous êtes rentré à l\'aube. La porte était encore ouverte. Un garde vous a regardé revenir sans un mot — juste un signe de tête.
- 
-Le directeur Morwen vous a reçu le lendemain matin. "Je sais que vous êtes parti," dit-il. "Et je sais que vous êtes revenu." Il ne vous a pas demandé pourquoi. "Rester demande du courage. Revenir en demande plus."
- 
-Votre statut à l\'Académie reste intact. Mais vous portez quelque chose de nouveau en vous — pas de la honte, exactement. Plutôt une connaissance précise de votre propre limite, et la conscience que vous l\'avez vue de près et que vous avez choisi de ne pas la franchir définitivement.
- 
-C\'est peut-être la leçon la plus importante que cette école vous ait apprise, même si elle ne figure dans aucun manuel.',
+
+Vous avez fui. Pas une décision consciente — une accumulation de peur et de pression.
+
+Un soir, votre sac était fait. Cinq kilomètres sur la route de terre. Assis au bord d\'un fossé. L\'Académie visible en silhouette, tours toujours lumineuses.
+
+Vous êtes rentré à l\'aube. Personne n\'avait fermé la porte.
+
+Morwen le lendemain : "Je sais que vous êtes parti. Et que vous êtes revenu." Pause. "Rester demande du courage. Revenir en demande plus."
+
+Votre statut reste intact. Mais vous portez maintenant la connaissance précise de votre propre limite.',
 1, 'defaite'),
- 
-(65, 'FIN DÉFAITE VI — Le Rituel Brisé',
+
+(66, 'DÉFAITE VI — Le Rituel Brisé',
 '💀 DÉFAITE — "La Brèche Ouverte"
- 
-Vous avez lâché le cercle de stabilisation pour combattre — et vous avez bien combattu. Deux membres de la Confrérie sont neutralisés grâce à vous. Mais sans le cercle complet, le rituel de scellement de Morwen et Sol a dérapé.
- 
-L\'Orbe rouge a explosé trop tôt. La brèche s\'est fermée partiellement — mais pas entièrement. Un fragment de l\'autre dimension est resté coincé dans les fondations de l\'Académie, comme un éclat de verre dans une plaie.
- 
-La situation n\'est pas catastrophique — pas encore. Mais l\'éclat dimensionnel irradie une énergie instable qui perturbe toute magie dans un rayon de cent mètres autour de la Tour Centrale. Plusieurs salles sont inutilisables. Les cours doivent être reorganisés. Et tous les six jours, à l\'exact moment de la prochaine mini-Éclipse, la perturbation s\'amplifie.
- 
-Morwen est vivant. Sol aussi. Mais tous deux savent — et vous savez — que votre choix dans la crypte a modifié l\'issue du rituel.
- 
-Personne ne vous le reproche publiquement. C\'est presque pire que des reproches : la politesse du silence.
- 
-Pendant les semaines qui suivent, vous travaillez avec une équipe de maîtres spécialistes des dimensions pour trouver comment extraire l\'éclat. C\'est votre façon de réparer ce qui a été brisé — pas par les paroles, mais par le travail.
- 
-L\'éclat sera extrait, un jour. Vous en avez fait la promesse, à personne en particulier, dans le silence de la crypte, les mains encore tremblantes d\'avoir lâché ce que vous auriez dû tenir.',
+
+Vous avez lâché le cercle pour combattre — deux membres neutralisés. Mais sans le cercle complet, le rituel déraille.
+
+L\'Orbe rouge explose trop tôt. La brèche se ferme à moitié. Un éclat dimensionnel reste dans les fondations. Perturbations toutes les six nuits. Zones inutilisables. Cours réorganisés.
+
+Morwen vivant. Sol aussi. Personne ne vous reproche rien publiquement. C\'est presque pire.
+
+Dans la crypte déserte, vous promettez à personne en particulier : vous trouverez comment extraire l\'éclat. Pas par les mots. Par le travail.',
+1, 'defaite'),
+
+(67, 'DÉFAITE VII — Le Piège Retourné',
+'💀 DÉFAITE — "Dans l\'Ombre de la Confrérie"
+
+Le piège s\'est retourné. La Confrérie avait anticipé — leurs espions vous avaient repéré depuis le début. En entrant dans la salle désaffectée, c\'est vous qui êtes tombé dans leur embuscade.
+
+Blessé, capturé vingt minutes, libéré volontairement avec un message : "La prochaine fois, nous ne serons pas aussi généreux."
+
+Morwen gèle votre accès aux zones sensibles. "Pour votre sécurité." La formule est polie. La réalité : vous êtes devenu un risque.
+
+Deux mois sans être dans la boucle. Vous apprenez la fin de l\'Éclipse par des rumeurs de couloir.
+
+L\'audace sans information, ce n\'est pas du courage.',
+1, 'defaite'),
+
+(68, 'DÉFAITE VIII — L\'Expulsion',
+'💀 DÉFAITE — "Fin Avant le Commencement"
+
+Morwen vous avait accordé une chance. Vous l\'avez refusée — par peur, par fierté, peu importe. Le résultat est le même.
+
+Votre dossier est clôturé le soir même. Un garde vous escorte jusqu\'à vos affaires, puis jusqu\'à la porte. Pas de cérémonie.
+
+Sur la route, vous vous retournez une seule fois. Les tours de cristal disparaissent dans la brume.
+
+Vous n\'avez passé que deux jours à l\'Académie. Pas assez pour apprendre la magie. Juste assez pour apprendre que certaines portes ne se rouvrent pas.',
+1, 'defaite'),
+
+(69, 'DÉFAITE IX — La Dénonciation Précipitée',
+'💀 DÉFAITE — "Quand les Certitudes s\'Effondrent"
+
+Vous avez dénoncé Morwen sans preuves solides, sans consulter Sol d\'abord.
+
+Le Conseil enquête. Morwen est suspendu trois semaines. Sans lui pour surveiller la crypte, deux membres de la Confrérie récupèrent l\'Orbe rouge.
+
+La brèche s\'ouvre lors de l\'Éclipse. Pas complètement — mais une entité passe. Douze heures de combat collectif. L\'aile sud de l\'Académie est détruite.
+
+Sol vous convoque. Son regard ne contient pas de colère. Pire : de la déception. "Vos doutes étaient peut-être fondés. Votre méthode a coûté une aile entière."
+
+Vous restez. Mais rien ne sera comme avant.',
+1, 'defaite'),
+
+(70, 'DÉFAITE X — Le Vide',
+'💀 DÉFAITE — "Absorbé par l\'Autre Côté"
+
+Vous avez donné trop. En orientant toute votre magie dans le rituel, vous avez créé un canal — quelque chose de l\'autre côté a tiré.
+
+La brèche se referme. L\'Académie est sauvée. Mais votre magie est... partie. Pas diminuée. Partie. Les flux que vous sentiez sont silencieux, comme une rivière asséchée.
+
+Morwen à votre réveil : "Ce peut être temporaire. Ou non. Nous ne savons pas."
+
+Les semaines suivantes sont étranges. Présent sans pouvoir pratiquer.
+
+Sol vous propose un rôle : analyste. Lecture des flux, théorie, stratégie — sans pratique. "L\'intelligence n\'a pas besoin de magie pour fonctionner."
+
+Le silence là où brûlait la flamme ne part pas vraiment.',
 1, 'defaite');
- 
+
 -- ============================================================
--- DONNÉES : CHOIX
+-- CHOIX
 -- ============================================================
- 
--- Depuis scène 1 — L'Arrivée
+
+-- ACTE I
+
+-- Scène 1
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(1, 2,  'Saluer poliment le garde et présenter votre lettre d\'admission avec courtoisie.', 0, 0, NULL),
-(1, 3,  'Contourner discrètement le poste de garde par les jardins sur le côté.', 0, 2, 7),
-(1, 4,  'Essayer de passer en force en jouant des coudes dans la foule.', -10, 0, NULL);
- 
--- Depuis scène 2 — Hall des Premiers Pas
+(1, 2,  'Saluer poliment le garde et présenter votre lettre d\'admission.', 0, 0, NULL),
+(1, 3,  'Contourner discrètement par les jardins sur le côté.', 0, 2, 5),
+(1, 4,  'Essayer de passer en force dans la foule.', -10, 0, NULL);
+
+-- Scène 2
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(2, 5,  'Aider le vieux mage à retrouver son pendentif perdu — il semble très agité.', 5, 5, 4),
-(2, 8,  'Consulter le tableau d\'affichage pour repérer une salle d\'étude isolée.', 0, 3, NULL),
-(2, 6,  'Ignorer le mage et aller directement aux dortoirs vous installer.', 0, 0, NULL);
- 
--- Depuis scène 3 — Jardins Secrets
+(2, 5,  'Aider le vieux mage à retrouver son objet perdu.', 5, 5, 4),
+(2, 6,  'Aller directement aux dortoirs vous installer.', 0, 0, NULL),
+(2, 10, 'Filer en salle de cours pour ne pas être en retard.', 0, 3, NULL);
+
+-- Scène 3
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(3, 8,  'Ramasser le grimoire mystérieux et trouver un endroit pour l\'étudier.', 0, 8, 1),
-(3, 6,  'Prendre la torche magique et rejoindre les dortoirs par l\'arrière.', 5, 0, 3);
- 
--- Depuis scène 4 — Cellule de Détention
+(3, 8,  'Ramasser le grimoire et trouver un atelier pour l\'étudier.', 0, 8, 1),
+(3, 6,  'Prendre la torche magique et rejoindre les dortoirs.', 5, 0, 3);
+
+-- Scène 4
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(4, 7,  'S\'excuser sincèrement et expliquer votre motivation — vous vouliez juste entrer rapidement.', 0, 0, NULL),
-(4, 60, 'Tenter de s\'échapper de la cellule par la force — vous n\'avez plus rien à perdre.', -25, 0, NULL);
- 
--- Depuis scène 5 — Bibliothèque Secrète
+(4, 7,  'S\'excuser sincèrement et expliquer votre motivation.', 0, 0, NULL),
+(4, 68, 'Garder le silence et refuser d\'expliquer quoi que ce soit.', 0, 0, NULL);
+
+-- Scène 5
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(5, 9,  'Ouvrir le journal sans nom dont les pages semblent changer de texte.', 0, 5, NULL),
-(5, 23, 'Prendre le traité de combat magique relié de rouge.', 0, 12, 10),
+(5, 9,  'Ouvrir le journal dont les pages changent selon l\'angle.', 0, 5, NULL),
+(5, 23, 'Prendre le traité de combat magique relié de rouge.', 0, 12, 7),
 (5, 6,  'Refermer les livres et aller vous préparer pour les cours.', 5, 0, 3);
- 
--- Depuis scène 6 — Dortoirs
+
+-- Scène 6
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(6, 10, 'Accepter la potion d\'Elara et se rendre au premier cours de magie élémentaire.', 10, 0, NULL),
-(6, 20, 'Suivre Elara discrètement pour découvrir ce qu\'elle sait sur l\'aile est.', 0, 5, NULL);
- 
--- Depuis scène 7 — Bureau du Directeur
+(6, 10, 'Accepter la potion d\'Elara et aller en cours.', 10, 0, NULL),
+(6, 20, 'Suivre Elara pour découvrir ce qu\'elle sait sur l\'aile est.', 0, 5, NULL);
+
+-- Scène 7
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(7, 11, 'Accepter la mission et partir immédiatement vers la tour nord.', 0, 5, 1),
-(7, 60, 'Refuser la mission — vous n\'êtes qu\'en première année, c\'est trop dangereux.', 0, 0, NULL);
- 
--- Depuis scène 8 — Atelier des Illusions
+(7, 11, 'Accepter la mission et partir vers la tour nord.', 0, 5, 1),
+(7, 68, 'Refuser la mission — trop dangereux pour un premier-an.', 0, 0, NULL);
+
+-- Scène 8
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(8, 12, 'Accepter le marché de l\'entité — le pouvoir offert est immense.', -15, 15, 6),
-(8, 13, 'Refuser fermement et tenter de sceller le miroir avec les runes que vous avez lues.', 10, 0, NULL);
- 
--- Depuis scène 9 — Prophétie du Grimoire
+(8, 14, 'Accepter le marché de l\'entité dans le miroir.', -15, 15, 6),
+(8, 15, 'Refuser et tenter de sceller le miroir.', 10, 0, NULL);
+
+-- Scène 9
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(9, 14, 'Aller immédiatement révéler la conspiration devant le Grand Conseil.', 0, 5, NULL),
-(9, 6,  'Garder le journal et le secret pour l\'instant — observer avant d\'agir.', 5, 0, NULL);
- 
--- Depuis scène 10 — Premier Cours
+(9, 21, 'Aller immédiatement révéler la conspiration au Grand Conseil.', 0, 5, NULL),
+(9, 24, 'Garder le journal secret et observer avant d\'agir.', 5, 0, NULL);
+
+-- Scène 10
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(10, 15, 'Choisir l\'élément Feu — la puissance immédiate vous attire.', 0, 15, 1),
-(10, 16, 'Choisir l\'élément Eau — la guérison et la protection sont votre nature.', 20, 0, 2);
- 
--- Depuis scène 11 — Tour Nord
+(10, 16, 'Choisir l\'élément Feu — la puissance vous attire.', 0, 15, 1),
+(10, 17, 'Choisir l\'élément Eau — guérison et protection.', 20, 0, 2),
+(10, 18, 'Laisser le Vent choisir à votre place.', 5, 8, NULL);
+
+-- ACTE II
+
+-- Scène 11
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(11, 17, 'Se plaquer contre le mur et laisser les deux silhouettes passer sans vous voir.', 0, 0, NULL),
-(11, 18, 'Vous retourner et dévaler l\'escalier — tenter de semer les deux inconnus.', -5, 3, NULL);
- 
--- Depuis scène 12 — Pacte Démoniaque
+(11, 12, 'Se plaquer dans l\'ombre et laisser les silhouettes passer.', 0, 0, NULL),
+(11, 61, 'Dévaler l\'escalier en espérant les semer.', -5, 0, NULL);
+
+-- Scène 12
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(12, 61, 'Utiliser le pouvoir du démon sans restriction pour dominer vos adversaires.', -20, 0, NULL),
-(12, 14, 'Résister à la corruption et alerter immédiatement le Grand Conseil.', 5, 0, NULL);
- 
--- Depuis scène 13 — Épreuve des Valeurs
+(12, 13, 'Affronter le gardien masqué de front.', -10, 5, NULL),
+(12, 19, 'Utiliser le sort "Double" pour créer une illusion diversion.', 0, 5, NULL);
+
+-- Scène 13
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(13, 55, 'Accepter la médaille d\'honneur avec modestie et gratitude.', 10, 5, 15),
-(13, 30, 'Demander à rejoindre l\'équipe d\'enquête du Professeur Aldric.', 0, 10, NULL);
- 
--- Depuis scène 14 — Salle du Conseil Convoqué
+(13, 33, 'Vaincre le gardien et saisir l\'Orbe.', -15, 0, 8),
+(13, 61, 'Fuir — vous êtes trop blessé pour continuer.', -5, 0, NULL);
+
+-- Scène 14
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(14, 26, 'Tout révéler en détail devant le Grand Conseil.', 0, 5, NULL),
-(14, 62, 'Taire une partie de la vérité pour protéger ceux qui vous ont aidé.', 0, 0, NULL);
- 
--- Depuis scène 15 — Voie du Feu
+(14, 62, 'Utiliser le pouvoir du démon sans retenue.', -20, 0, 14),
+(14, 21, 'Résister à la corruption et alerter le Grand Conseil.', 5, 0, NULL);
+
+-- Scène 15
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(15, 23, 'Chercher à augmenter votre puissance en lisant le traité de combat magique.', 0, 10, NULL),
-(15, 30, 'Suivre les conseils d\'Aldric et pratiquer la canalisation disciplinée.', 5, 5, 10);
- 
--- Depuis scène 16 — Voie de l\'Eau
+(15, 25, 'Rejoindre la Cellule de Veille d\'Aldric.', 5, 5, 11),
+(15, 21, 'Demander à rejoindre la brigade du Grand Conseil.', 5, 5, NULL);
+
+-- Scène 16
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(16, 20, 'Suivre Elara dans l\'aile est pour soigner d\'éventuelles victimes.', 5, 0, 3),
-(16, 55, 'Vous concentrer sur votre formation et repousser les dangereuses propositions d\'Elara.', 10, 5, NULL);
- 
--- Depuis scène 17 — Embuscade au Troisième Palier
+(16, 23, 'Chercher à augmenter votre puissance avec le traité de combat.', 0, 10, NULL),
+(16, 25, 'Suivre les conseils d\'Aldric et pratiquer la canalisation.', 5, 5, 7);
+
+-- Scène 17
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(17, 19, 'Monter rapidement au quatrième palier pendant qu\'ils sont encore dans l\'escalier.', 0, 5, NULL),
-(17, 18, 'Suivre les deux silhouettes à distance pour connaître leur destination.', -5, 0, NULL);
- 
--- Depuis scène 18 — Confrontation avec le Gardien
+(17, 20, 'Suivre Elara dans l\'aile est ce soir.', 5, 0, 3),
+(17, 26, 'Enquêter seul sur la crypte dont vous avez entendu parler.', 0, 5, NULL);
+
+-- Scène 18
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(18, 33, 'Combattre le gardien masqué de front — votre force vous permettra de vaincre.', -15, 0, 8),
-(18, 60, 'Fuir devant sa puissance — vous êtes trop inexpérimenté pour ce combat.', -5, 0, NULL);
- 
--- Depuis scène 19 — Ruse et Illusion
+(18, 19, 'Suivre le cours de Magie Tactique avec Sol.', 5, 8, NULL),
+(18, 20, 'Rejoindre Elara et enquêter sur l\'aile est.', 0, 5, 12);
+
+-- Scène 19
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(19, 33, 'Bondir par la fenêtre avec l\'Orbe et rejoindre le directeur immédiatement.', -5, 0, 8),
-(19, 60, 'Hésiter une seconde de trop — le gardien perce votre illusion.', -20, 0, NULL);
- 
--- Depuis scène 20 — Nuit de l\'Aile Est
+(19, 36, 'Sol vous révèle des informations en privé après le cours.', 5, 5, 15),
+(19, 25, 'Rejoindre la Cellule de Veille d\'Aldric en parallèle.', 0, 8, NULL),
+(19, 20, 'Retrouver Elara pour inspecter l\'aile est ensemble.', 0, 5, NULL);
+
+-- Scène 20
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(20, 21, 'Accepter le plan d\'Elara et agir cette nuit même.', 0, 5, NULL),
-(20, 22, 'Refuser d\'agir seul et insister pour aller chercher du renfort auprès de Morwen.', 0, 0, NULL);
- 
--- Depuis scène 21 — Alliance avec Elara
+(20, 28, 'Accepter le plan d\'Elara — entrer par la lucarne.', 0, 5, NULL),
+(20, 22, 'Refuser et aller chercher Morwen en renfort.', 0, 0, NULL);
+
+-- ACTE III
+
+-- Scène 21
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(21, 35, 'Suivre le plan et vous faufiler dans la pièce par la lucarne.', 0, 5, NULL),
-(21, 37, 'Improviser un plan différent — attaquer par la porte principale.', -10, 0, NULL);
- 
--- Depuis scène 22 — Chercher du Renfort
+(21, 22, 'Tout révéler devant le Grand Conseil.', 0, 5, NULL),
+(21, 63, 'Taire une partie pour protéger certains alliés.', 0, 0, NULL);
+
+-- Scène 22
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(22, 37, 'Accompagner Morwen et ses gardes dans l\'aile est.', 0, 5, NULL),
-(22, 6,  'Rester en arrière — la situation est trop dangereuse pour un premier-an.', 5, 0, NULL);
- 
--- Depuis scène 23 — Traité de Combat
+(22, 31, 'Rester et combattre aux côtés des maîtres loyaux.', -5, 5, NULL),
+(22, 32, 'Poursuivre Wyrd dans les archives.', 0, 5, NULL);
+
+-- Scène 23
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(23, 24, 'Dire la vérité à Aldric sur la provenance du traité.', 0, 5, NULL),
-(23, 25, 'Mentir sur la provenance — prétendre avoir trouvé le traité dans les dortoirs.', 0, 0, NULL);
- 
--- Depuis scène 24 — Vérité sur le Traité
+(23, 25, 'Dire la vérité à Aldric sur la provenance du traité.', 0, 5, NULL),
+(23, 24, 'Mentir — prétendre avoir trouvé le traité dans les dortoirs.', 0, 0, NULL);
+
+-- Scène 24
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(24, 30, 'Accepter la mission d\'enquête proposée par Aldric.', 0, 8, 12),
-(24, 20, 'Décliner la mission mais partager vos informations avec Elara à la place.', 5, 0, NULL);
- 
--- Depuis scène 25 — Mensonge sur le Traité
+(24, 29, 'Tendre un piège à ceux qui vous ont contacté.', 0, 8, 12),
+(24, 65, 'Fuir l\'Académie cette nuit — votre vie est en danger.', 0, 0, NULL);
+
+-- Scène 25
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(25, 32, 'Préparer un piège pour identifier ceux qui vous ont envoyé cette note menaçante.', 0, 8, NULL),
-(25, 64, 'Fuir l\'Académie cette nuit même — la Confrérie vous a dans le collimateur.', 0, 0, NULL);
- 
--- Depuis scène 26 — Révélation devant le Conseil
+(25, 26, 'Inspecter la crypte — point central du pentagramme.', 0, 5, NULL),
+(25, 31, 'Porter vos découvertes au Grand Conseil.', 5, 0, NULL);
+
+-- Scène 26
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(26, 27, 'Rester dans la salle et combattre aux côtés des maîtres loyaux.', -5, 5, NULL),
-(26, 28, 'Poursuivre le Professeur Wyrd dans les archives.', 0, 5, NULL);
- 
--- Depuis scène 27 — Bataille dans la Salle du Conseil
+(26, 27, 'Écouter la vérité complète de Morwen.', 0, 5, NULL),
+(26, 36, 'Sortir et aller chercher Sol — elle doit entendre ça.', 5, 0, NULL);
+
+-- Scène 27
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(27, 28, 'Courir après le maître traître qui s\'est précipité vers les archives.', -5, 5, NULL),
-(27, 29, 'Rester et protéger la Maîtresse Suprême qui est sous pression.', 5, 5, 9);
- 
--- Depuis scène 28 — Poursuite du Traître
+(27, 38, 'Faire confiance à Morwen et l\'aider pour le rituel.', 0, 5, 10),
+(27, 37, 'Poser des questions difficiles — trop de zones d\'ombre.', 5, 0, NULL);
+
+-- Scène 28
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(28, 40, 'Capturer Wyrd et lui faire révéler ce que Morwen cache dans la crypte.', -10, 0, NULL),
-(28, 29, 'Abandonner la poursuite et revenir protéger Sol qui est seule.', 0, 0, NULL);
- 
--- Depuis scène 29 — Protéger la Maîtresse Suprême
+(28, 35, 'Entrer par la lucarne et détruire la pierre de focus.', -10, 5, NULL),
+(28, 22, 'Reculer et aller chercher Morwen en renfort.', 0, 0, NULL);
+
+-- Scène 29
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(29, 41, 'Accompagner Sol dans la crypte qu\'elle veut inspecter immédiatement.', 5, 5, NULL),
-(29, 55, 'Rester en surface et coordonner l\'arrestation des membres de la Confrérie.', 10, 0, 15);
- 
--- Depuis scène 30 — Investigation avec Aldric
+(29, 30, 'Se rendre au rendez-vous piégé.', -5, 5, NULL),
+(29, 31, 'Annuler le piège et alerter directement le Grand Conseil.', 5, 0, NULL);
+
+-- Scène 30
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(30, 40, 'Inspecter la crypte sous la chapelle — le point central du pentagramme.', 0, 5, NULL),
-(30, 26, 'Porter vos découvertes directement au Grand Conseil.', 0, 5, NULL);
- 
--- Depuis scène 31 — Note de la Confrérie
+(30, 26, 'Aller vérifier la crypte — les doutes de Cassin méritent d\'être levés.', 0, 5, NULL),
+(30, 31, 'Ignorer Cassin et témoigner directement devant le Conseil.', 5, 5, NULL);
+
+-- ACTE IV
+
+-- Scène 31
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(31, 32, 'Tendre un piège à ceux qui vous ont envoyé cette note.', 0, 8, NULL),
-(31, 64, 'Fuir l\'Académie cette nuit — votre vie est en danger.', 0, 0, NULL);
- 
--- Depuis scène 32 — Piège à la Confrérie
+(31, 32, 'Courir après Wyrd dans les archives.', -5, 5, NULL),
+(31, 33, 'Protéger Sol pendant la bataille.', 5, 5, 9);
+
+-- Scène 32
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(32, 38, 'Se rendre au rendez-vous piégé et capturer les membres de la Confrérie.', -5, 5, NULL),
-(32, 26, 'Annuler le piège et alerter le Grand Conseil à la place.', 0, 0, NULL);
- 
--- Depuis scène 33 — Orbe Récupéré
+(32, 26, 'Capturer Wyrd et lui faire avouer les secrets de Morwen.', -10, 0, NULL),
+(32, 69, 'Wyrd vous échappe — vous perdez sa trace.', -5, 0, NULL);
+
+-- Scène 33
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(33, 34, 'Demander au directeur les explications qu\'il vous doit.', 0, 5, NULL),
-(33, 40, 'Accepter ses remerciements mais enquêter seul sur la crypte que vous avez entendu mentionner.', 0, 8, NULL);
- 
--- Depuis scène 34 — Explications de Morwen
+(33, 34, 'Retourner dans l\'aile est avec Elara ce soir.', 0, 5, NULL),
+(33, 38, 'Demander à Morwen de montrer les deux Orbes dans la crypte.', 0, 5, NULL);
+
+-- Scène 34
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(34, 41, 'Demander à Morwen de vous montrer la crypte et les deux Orbes.', 0, 5, NULL),
-(34, 43, 'Chercher à vérifier indépendamment ce que Morwen vous a dit avant de lui faire confiance.', 5, 0, NULL);
- 
--- Depuis scène 35 — Nuit du Rituel avec Elara
+(34, 35, 'Plonger et saisir la pierre de focus.', -10, 5, NULL),
+(34, 66, 'Hésiter — vous êtes repéré avant d\'agir.', -20, 0, NULL);
+
+-- Scène 35
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(35, 36, 'Plonger et saisir la pierre de focus au centre du cercle rituel.', -10, 5, NULL),
-(35, 22, 'Reculer et aller chercher Morwen et ses gardes en renfort.', 0, 0, NULL);
- 
--- Depuis scène 36 — Détruire la Pierre de Focus
+(35, 40, 'Suivre Elara pour préparer le rituel de scellement final.', 5, 5, NULL),
+(35, 47, 'Remettre tout entre les mains de Morwen et Sol.', 10, 0, NULL);
+
+-- Scène 36
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(36, 45, 'Suivre Elara dans la préparation du rituel de scellement final.', 5, 5, NULL),
-(36, 59, 'Remettre tout entre les mains du directeur Morwen — votre rôle est terminé.', 10, 0, NULL);
- 
--- Depuis scène 37 — Intervention Tardive
+(36, 37, 'Écouter Sol jusqu\'au bout sur les mensonges de Morwen.', 0, 5, NULL),
+(36, 40, 'Ignorer les doutes — l\'heure n\'est plus aux questions.', 5, 0, NULL);
+
+-- Scène 37
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(37, 45, 'Participer au rituel de scellement final avec Morwen et Sol.', 0, 5, NULL),
-(37, 59, 'Laisser les maîtres gérer la suite et rédiger un rapport détaillé sur ce que vous avez vu.', 5, 0, NULL);
- 
--- Depuis scène 38 — Rendez-Vous Piégé
+(37, 40, 'Faire confiance à Morwen malgré tout — agir ensemble.', 0, 5, NULL),
+(37, 69, 'Signaler Morwen au Grand Conseil — trop de zones d\'ombre.', 0, 0, NULL);
+
+-- Scène 38
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(38, 39, 'Interroger les membres capturés pour en savoir plus.', 0, 5, NULL),
-(38, 26, 'Livrer immédiatement les prisonniers au Grand Conseil sans les interroger.', 5, 0, NULL);
- 
--- Depuis scène 39 — Un Maître Parmi les Traîtres
+(38, 39, 'Préparer le rituel — l\'Éclipse approche.', 5, 5, NULL),
+(38, 36, 'Consulter Sol avant de vous engager davantage.', 5, 0, NULL);
+
+-- Scène 39
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(39, 40, 'Aller vérifier ce que Morwen cache dans la crypte — les doutes méritent d\'être levés.', 0, 5, NULL),
-(39, 26, 'Ignorer la provocation de Cassin et témoigner directement devant le Grand Conseil.', 5, 5, NULL);
- 
--- Depuis scène 40 — La Crypte
+(39, 40, 'Refuser de céder et préparer le rituel en urgence.', 0, 10, NULL),
+(39, 67, 'Tendre une nouvelle embuscade à la Confrérie avant l\'Éclipse.', -10, 5, NULL);
+
+-- Scène 40
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(40, 41, 'Écouter la vérité complète que Morwen veut vous révéler.', 0, 5, NULL),
-(40, 43, 'Sortir de la crypte et aller chercher Sol pour qu\'elle entende aussi.', 5, 0, NULL);
- 
--- Depuis scène 41 — Vérité du Directeur
+(40, 41, 'Prendre votre place dans le rituel — la nuit de l\'Éclipse commence.', 0, 5, NULL),
+(40, 65, 'Paniquer devant l\'ampleur de la situation et fuir.', -10, 0, NULL);
+
+-- ACTE V
+
+-- Scène 41
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(41, 42, 'Faire confiance à Morwen et accepter de l\'aider pour le rituel de scellement.', 0, 5, 13),
-(41, 43, 'Poser des questions difficiles à Morwen avant de vous engager.', 5, 0, NULL);
- 
--- Depuis scène 42 — Faire Confiance à Morwen
+(41, 42, 'Maintenir le cercle quoi qu\'il arrive.', 0, 5, NULL),
+(41, 70, 'Orienter toute votre magie dans le rituel — donner absolument tout.', -20, 0, NULL);
+
+-- Scène 42
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(42, 45, 'Accepter votre rôle et préparer le rituel pour la nuit de l\'Éclipse.', 5, 5, NULL),
-(42, 44, 'Insister pour inclure Sol dans le rituel malgré les réticences de Morwen.', 5, 0, NULL);
- 
--- Depuis scène 43 — Douter de Morwen
+(42, 43, 'Tenir le cercle coûte que coûte.', -15, 0, NULL),
+(42, 44, 'Lâcher le cercle et combattre les envahisseurs.', -10, 5, NULL);
+
+-- Scène 43
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(43, 44, 'Aller chercher Yrenne Sol pour l\'inclure dans la décision.', 5, 5, NULL),
-(43, 62, 'Signaler Morwen au Grand Conseil — trop de zones d\'ombre.', 0, 0, NULL);
- 
--- Depuis scène 44 — Trouver Yrenne Sol
+(43, 45, 'Tenir jusqu\'à la fin — le rituel se termine.', -10, 0, NULL),
+(43, 66, 'Vous effondrer — plus assez de force pour tenir.', -30, 0, NULL);
+
+-- Scène 44
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(44, 45, 'Retourner dans la crypte avec Sol pour préparer le rituel collectif.', 5, 5, NULL),
-(44, 41, 'Laisser Sol gérer Morwen seul et retourner vous reposer avant l\'Éclipse.', 10, 0, NULL);
- 
--- Depuis scène 45 — Nuit de l\'Éclipse
+(44, 45, 'Rejoindre le cercle après avoir neutralisé les envahisseurs.', -10, 0, NULL),
+(44, 66, 'Le rituel déraille avant que vous puissiez revenir.', -20, 0, NULL);
+
+-- Scène 45
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(45, 46, 'Prendre votre place dans le cercle de stabilisation et maintenir le rituel.', 0, 5, NULL),
-(45, 64, 'Paniquer devant l\'ampleur de la situation et sortir de la crypte en courant.', -10, 0, NULL);
- 
--- Depuis scène 46 — Tenir le Cercle
+(45, 46, 'Laisser le rituel se terminer — l\'Académie avant tout.', 0, 0, NULL),
+(45, 70, 'Donner tout ce qui vous reste pour accélérer la fermeture.', -20, 0, NULL);
+
+-- Scène 46
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(46, 47, 'Faire face aux membres de la Confrérie qui défoncent la porte.', 0, 5, NULL),
-(46, 50, 'Maintenir le cercle malgré l\'intrusion et ne pas lâcher.', 5, 0, NULL);
- 
--- Depuis scène 47 — Le Dernier Assaut
+(46, 47, 'Rejoindre Sol pour les arrestations et le rapport.', 5, 0, NULL),
+(46, 48, 'Attendre la convocation de Sol dans la crypte.', 0, 0, NULL);
+
+-- Scène 47
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(47, 48, 'Tenir le cercle coûte que coûte, même sous les attaques.', -15, 0, NULL),
-(47, 49, 'Lâcher le cercle pour combattre et protéger Morwen et Sol.', -10, 5, NULL);
- 
--- Depuis scène 48 — Tenir contre Tout
+(47, 48, 'Se rendre à la convocation de Sol.', 0, 0, NULL),
+(47, 51, 'Rejoindre la cérémonie des Distinctions annoncée par Morwen.', 5, 5, 11);
+
+-- Scène 48
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(48, 51, 'Donner tout ce qui vous reste de magie pour alimenter le rituel.', -20, 0, NULL),
-(48, 50, 'Tenir sans forcer — chaque seconde que vous gagnez aide Morwen et Sol.', -5, 0, NULL);
- 
--- Depuis scène 49 — Lâcher le Cercle
+(48, 51, 'Choisir la Médaille de l\'Académie — honneur public.', 5, 0, 11),
+(48, 54, 'Choisir la Cellule de Veille — discrétion et enquête.', 0, 5, NULL),
+(48, 56, 'Choisir la Brigade avec Elara — duo légendaire.', 5, 5, NULL);
+
+-- Scène 49
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(49, 50, 'Rejoindre le cercle aussitôt les adversaires neutralisés.', -10, 0, NULL),
-(49, 65, 'Le rituel déraille — vous n\'arrivez pas à rejoindre le cercle à temps.', -20, 0, NULL);
- 
--- Depuis scène 50 — La Brèche Résiste
+(49, 66, 'Accepter l\'échec — vous avez fait ce que vous pouviez.', 0, 0, NULL),
+(49, 50, 'Refuser d\'abandonner — il doit y avoir une solution.', 0, 5, NULL);
+
+-- Scène 50
 INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(50, 51, 'Concentrer toute votre magie résiduelle pour soutenir Morwen et Sol.', -10, 0, NULL),
-(50, 65, 'Vous effondrer sous la pression avant que le rituel se termine.', -25, 0, NULL);
- 
--- Depuis scène 51 — Donner le Reste de sa Magie
-INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(51, 52, 'Tenir jusqu\'à la fin, même si ça vous vide entièrement.', -10, 0, NULL),
-(51, 65, 'Vous écrouler — vous avez tout donné mais ce n\'était pas assez.', -30, 0, NULL);
- 
--- Depuis scène 52 — La Brèche se Ferme
-INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(52, 53, 'Vous laisser tomber — vous avez accompli ce que vous pouviez.', 0, 0, NULL);
- 
--- Depuis scène 53 — Académie Sauvée
-INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(53, 56, 'Accepter la cérémonie des Distinctions que Morwen annonce en votre honneur.', 5, 0, 15),
-(53, 59, 'Décliner les honneurs et demander à rejoindre la Cellule de Veille discrète d\'Aldric.', 0, 5, NULL);
- 
--- Depuis scène 54 — Les Traîtres Jugés
-INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(54, 56, 'Terminer l\'année scolaire et rejoindre la cérémonie des Distinctions.', 5, 5, NULL),
-(54, 57, 'Rencontrer le Professeur Drast pour voir si vous pouvez compléter le journal de Serafina.', 0, 5, 4);
- 
--- Depuis scène 55 — Proposition Inattendue
-INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force, id_objet_donne) VALUES
-(55, 57, 'Accepter de lire les pages de Serafina et de poursuivre son œuvre.', 0, 5, 4),
-(55, 58, 'Décliner le rôle de chercheur et vous consacrer à la guérison à l\'infirmerie.', 10, 0, 3),
-(55, 59, 'Rejoindre la Cellule de Veille d\'Aldric pour enquêter sur les membres en fuite.', 0, 10, 12);
+(50, 52, 'Chercher Drast pour compléter le journal de Serafina.', 0, 5, 4),
+(50, 53, 'Aller à l\'infirmerie et vous consacrer à la guérison.', 10, 0, 3),
+(50, 55, 'Demander à Sol les pages secrètes du journal de Serafina.', 0, 5, NULL);
