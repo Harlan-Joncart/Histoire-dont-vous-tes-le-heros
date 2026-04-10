@@ -1,7 +1,7 @@
 
 -- ============================================
 -- BASE DE DONNÉES : academie (VERSION ÉTENDUE)
--- ~10 min de lecture, fins longues et variées
+-- fins longues et variées
 -- ============================================
 USE joncart;
 SET FOREIGN_KEY_CHECKS = 0;
