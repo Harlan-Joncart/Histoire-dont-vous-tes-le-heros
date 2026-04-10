@@ -168,7 +168,3 @@ L'histoire est découpée en **5 actes** :
 - Sauvegarde en base de données de la progression du joueur.
 - Système de combat au tour par tour.
 - Conditions sur les choix selon les stats ou l'inventaire du joueur.
-
----
-
-Ce projet est destiné à un usage éducatif — Lycée Fulbert, BTS SIO. N'hésitez pas à l'adapter pour vos propres aventures !
