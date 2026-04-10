@@ -1,8 +1,10 @@
 
 -- ============================================
 -- BASE DE DONNÉES : academie (VERSION ÉTENDUE)
--- fins longues et variées
+-- 5 Actes · 6 Victoires · 10 Défaites
+-- Textes courts · Beaucoup de branches
 -- ============================================
+CREATE DATABASE IF NOT EXISTS joncart;
 USE joncart;
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS 
