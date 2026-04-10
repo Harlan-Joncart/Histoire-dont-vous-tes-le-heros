@@ -3,17 +3,16 @@
 // CONFIGURATION BASE DE DONNÉES
 // ============================================
 
-define('DB_HOST',    '192.168.56.20');
-define('DB_NAME',    'academie');
-define('DB_USER',    'application');
-define('DB_PASS',    'motdepasse');
-define('DB_CHARSET', 'utf8');
+define('DB_HOST',    'joncart.slam.lab');
+define('DB_NAME',    'joncart');
+define('DB_USER',    'joncart');
+define('DB_PASS',    'MaTU0AZD11ui');
 
 function getPDO(): PDO {
     static $pdo = null;
     if ($pdo === null) {
         try {
-            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME;
             $pdo = new PDO($dsn, DB_USER, DB_PASS, [
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
