@@ -3,10 +3,10 @@
 // CONFIGURATION BASE DE DONNÉES
 // ============================================
 
-define('DB_HOST',    'joncart.slam.lab');
-define('DB_NAME',    'joncart');
-define('DB_USER',    'joncart');
-define('DB_PASS',    'MaTU0AZD11ui');
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'academie');
+define('DB_USER', 'root');
+define('DB_PASS', '');
 
 function getPDO(): PDO {
     static $pdo = null;
