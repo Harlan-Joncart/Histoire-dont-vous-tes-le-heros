@@ -1,11 +1,9 @@
 
 -- ============================================
 -- BASE DE DONNÉES : academie (VERSION ÉTENDUE)
--- 5 Actes · 6 Victoires · 10 Défaites
--- Textes courts · Beaucoup de branches
+-- fins longues et variées
 -- ============================================
-CREATE DATABASE IF NOT EXISTS academie;
-USE academie;
+USE joncart;
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS 
     HistoriqueProgression,
@@ -13,7 +11,8 @@ DROP TABLE IF EXISTS
     Personnage,
     Choix,
     Objet,
-    Scene;
+    Scene,
+    Combat;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================
@@ -829,3 +828,140 @@ INSERT INTO Choix (id_scene_source, id_scene_dest, texte, effet_vie, effet_force
 (50, 52, 'Chercher Drast pour compléter le journal de Serafina.', 0, 5, 4),
 (50, 53, 'Aller à l\'infirmerie et vous consacrer à la guérison.', 10, 0, 3),
 (50, 55, 'Demander à Sol les pages secrètes du journal de Serafina.', 0, 5, NULL);
+
+
+
+-- ============================================================
+-- 1. COLONNES DE CONDITIONS sur la table Choix
+-- ============================================================
+ 
+ALTER TABLE Choix
+    ADD COLUMN cond_vie_min      INT DEFAULT 0    COMMENT 'Vie minimale requise',
+    ADD COLUMN cond_force_min    INT DEFAULT 0    COMMENT 'Force minimale requise',
+    ADD COLUMN cond_objet_requis INT DEFAULT NULL COMMENT 'id_objet requis en inventaire';
+ 
+ALTER TABLE Choix
+    ADD CONSTRAINT fk_choix_objet_req
+    FOREIGN KEY (cond_objet_requis) REFERENCES Objet(id_objet);
+ 
+-- ============================================================
+-- 2. COLONNES is_combat sur Scene
+-- ============================================================
+ 
+ALTER TABLE Scene
+    ADD COLUMN is_combat         TINYINT(1)   DEFAULT 0,
+    ADD COLUMN combat_pv_ennemi  INT          DEFAULT 30,
+    ADD COLUMN combat_nom_ennemi VARCHAR(100) DEFAULT 'Ennemi',
+    ADD COLUMN combat_icone      VARCHAR(10)  DEFAULT '👹',
+    ADD COLUMN combat_scene_win  INT          DEFAULT NULL,
+    ADD COLUMN combat_scene_lose INT          DEFAULT NULL;
+ 
+-- ============================================================
+-- 3. TABLE COMBAT
+-- ============================================================
+ 
+CREATE TABLE IF NOT EXISTS Combat (
+    id_combat         INT AUTO_INCREMENT PRIMARY KEY,
+    id_personnage     INT NOT NULL,
+    id_scene          INT NOT NULL,
+    pv_ennemi         INT NOT NULL DEFAULT 30,
+    pv_ennemi_max     INT NOT NULL DEFAULT 30,
+    nom_ennemi        VARCHAR(100) DEFAULT 'Ennemi',
+    icone_ennemi      VARCHAR(10)  DEFAULT '👹',
+    tour              INT NOT NULL DEFAULT 1,
+    termine           TINYINT(1)   DEFAULT 0,
+    victoire          TINYINT(1)   DEFAULT 0,
+    id_scene_victoire INT DEFAULT NULL,
+    id_scene_defaite  INT DEFAULT NULL,
+    FOREIGN KEY (id_personnage) REFERENCES Personnage(id_personnage),
+    FOREIGN KEY (id_scene)      REFERENCES Scene(id_scene)
+);
+ 
+-- ============================================================
+-- 4. MARQUER LES SCÈNES DE COMBAT
+-- ============================================================
+ 
+-- Scène 13 "Le Combat du Gardien"
+--   victoire → scène 33 (Vaincre le gardien et saisir l'Orbe — suite narrative)
+--   défaite  → scène 61 (DÉFAITE I — La Tour Perdue)
+UPDATE Scene SET
+    is_combat         = 1,
+    combat_pv_ennemi  = 35,
+    combat_nom_ennemi = 'Gardien masqué',
+    combat_icone      = '🥷',
+    combat_scene_win  = 33,
+    combat_scene_lose = 61
+WHERE id_scene = 13;
+ 
+-- Scène 44 "Combattre les Envahisseurs"
+--   victoire → scène 45 (suite du rituel)
+--   défaite  → scène 66 (DÉFAITE VI — Le Rituel Brisé)
+UPDATE Scene SET
+    is_combat         = 1,
+    combat_pv_ennemi  = 50,
+    combat_nom_ennemi = 'Confrérie du Vide',
+    combat_icone      = '🌑',
+    combat_scene_win  = 45,
+    combat_scene_lose = 66
+WHERE id_scene = 44;
+ 
+-- ============================================================
+-- 5. CONDITIONS SUR LES CHOIX
+-- ============================================================
+ 
+-- Scène 12 → 13 : "Affronter le gardien de front" — requiert Force >= 15
+UPDATE Choix SET cond_force_min = 15
+WHERE id_scene_source = 12 AND id_scene_dest = 13;
+ 
+-- Scène 34 → 35 : "Plonger et saisir la pierre de focus" — requiert Vie >= 30
+UPDATE Choix SET cond_vie_min = 30
+WHERE id_scene_source = 34 AND id_scene_dest = 35;
+ 
+-- Scène 5 → 23 : "Prendre le traité de combat" — donne l'objet 7 (Parchemin runique)
+--   pas de condition, déjà configuré dans les données d'origine
+ 
+-- Scène 50 → 52 : "Chercher Drast" — requiert d'avoir le Grimoire ancien (objet 4)
+UPDATE Choix SET cond_objet_requis = 4
+WHERE id_scene_source = 50 AND id_scene_dest = 52;
+ 
+-- Scène 48 → 54 : "Choisir la Cellule de Veille" — requiert Force >= 20
+UPDATE Choix SET cond_force_min = 20
+WHERE id_scene_source = 48 AND id_scene_dest = 54;
+ 
+-- ============================================================
+-- 6. COLONNE utilise sur Inventaire (pour les consommables)
+-- ============================================================
+ 
+ALTER TABLE Inventaire
+    ADD COLUMN utilise TINYINT(1) DEFAULT 0 COMMENT '1 = consommable déjà utilisé';
+ 
+-- ============================================================
+-- 7. CONDITIONS SUPPLÉMENTAIRES (objets narratifs et force)
+-- ============================================================
+ 
+-- Scène 12 → 19 : "Utiliser le sort Double" — requiert Grimoire (objet 4) ou Parchemin (objet 7)
+-- On choisit le Parchemin runique (plus accessible narrativement)
+UPDATE Choix SET cond_objet_requis = 7
+WHERE id_scene_source = 12 AND id_scene_dest = 19;
+ 
+-- Scène 27 → 38 : "Faire confiance à Morwen et l'aider" — requiert Orbe de lumière (objet 10)
+-- Cohérent : Morwen vous l'a confié
+UPDATE Choix SET cond_objet_requis = 10
+WHERE id_scene_source = 27 AND id_scene_dest = 38;
+ 
+-- Scène 25 → 26 : "Inspecter la crypte" — requiert Force >= 18
+UPDATE Choix SET cond_force_min = 18
+WHERE id_scene_source = 25 AND id_scene_dest = 26;
+ 
+-- Scène 39 → 67 : "Tendre une embuscade" — requiert Force >= 22
+UPDATE Choix SET cond_force_min = 22
+WHERE id_scene_source = 39 AND id_scene_dest = 67;
+ 
+-- Scène 43 → 45 : "Tenir jusqu'à la fin" — requiert Vie >= 20
+UPDATE Choix SET cond_vie_min = 20
+WHERE id_scene_source = 43 AND id_scene_dest = 45;
+ 
+-- Scène 41 → 70 : "Donner absolument tout" — requiert Vie >= 25
+-- (c'est un sacrifice, pas un choix désespéré)
+UPDATE Choix SET cond_vie_min = 25
+WHERE id_scene_source = 41 AND id_scene_dest = 70;
